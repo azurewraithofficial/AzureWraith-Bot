@@ -1,48 +1,346 @@
-Discord Bot Privay Policy:
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Directive | Azure Wraith</title>
-    <style>
-        :root { --void: #000c1a; --deep-void: #001F3F; --wraith-blue: #007FFF; --azure: #F0F8FF; --glass: rgba(240, 248, 255, 0.03); }
-        body { background: radial-gradient(circle at top right, #002b5c, var(--void)); color: var(--azure); font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.8; margin: 0; padding: 40px 20px; }
-        .container { max-width: 850px; margin: auto; background: var(--glass); backdrop-filter: blur(10px); padding: 50px; border-radius: 24px; border: 1px solid rgba(0, 127, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        h1 { color: var(--wraith-blue); font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 10px; }
-        .last-updated { opacity: 0.5; font-size: 0.9rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
-        h2 { color: var(--wraith-blue); font-size: 1.4rem; margin-top: 40px; display: flex; align-items: center; }
-        h2::before { content: '◈'; margin-right: 15px; font-size: 1rem; opacity: 0.7; }
-        ul { list-style: none; padding: 0; }
-        li { background: rgba(0, 127, 255, 0.05); margin-bottom: 10px; padding: 12px 20px; border-radius: 8px; border-left: 3px solid var(--wraith-blue); }
-        strong { color: var(--wraith-blue); }
-        .contact-box { margin-top: 50px; padding: 30px; border-radius: 15px; background: rgba(0, 127, 255, 0.1); text-align: center; border: 1px dashed var(--wraith-blue); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Directive | Azure Wraith</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --void:#000c1a;
+    --deep:#001428;
+    --blue:#0070f3;
+    --blue-bright:#3b9eff;
+    --blue-glow:#005cc5;
+    --azure:#e8f4ff;
+    --muted:#5a8ab8;
+    --line:rgba(0,112,243,0.18);
+    --card:rgba(0,20,40,0.7);
+  }
+  html{scroll-behavior:smooth}
+  body{
+    background:#000c1a;
+    color:var(--azure);
+    font-family:'Space Grotesk',sans-serif;
+    line-height:1.75;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;
+    background-image:
+      linear-gradient(rgba(0,112,243,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,112,243,0.04) 1px, transparent 1px);
+    background-size:48px 48px;
+    pointer-events:none;
+  }
+  .bg-orb{
+    position:fixed;z-index:0;pointer-events:none;
+    border-radius:50%;filter:blur(90px);opacity:0.18;
+  }
+  .bg-orb-1{width:600px;height:600px;top:-100px;right:-150px;background:#0055cc;}
+  .bg-orb-2{width:400px;height:400px;bottom:100px;left:-100px;background:#003399;}
+
+  .wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:60px 32px 100px;}
+
+  /* ── HEADER ── */
+  .header{margin-bottom:64px;}
+  .tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;
+    color:var(--blue-bright);letter-spacing:0.12em;text-transform:uppercase;
+    background:rgba(0,112,243,0.1);border:1px solid rgba(0,112,243,0.25);
+    border-radius:4px;padding:6px 14px;margin-bottom:28px;
+  }
+  .tag-dot{width:6px;height:6px;background:var(--blue-bright);border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  h1{
+    font-size:clamp(2.4rem,6vw,3.8rem);font-weight:700;
+    letter-spacing:-0.03em;line-height:1.1;
+    color:#fff;margin-bottom:16px;
+  }
+  h1 span{
+    background:linear-gradient(90deg,#3b9eff,#0070f3);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .subtitle{font-size:16px;color:var(--muted);font-weight:400;max-width:520px;line-height:1.65;}
+  .meta-row{
+    display:flex;align-items:center;gap:20px;margin-top:28px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+    flex-wrap:wrap;
+  }
+  .meta-item{display:flex;align-items:center;gap:7px;}
+  .meta-icon{width:14px;height:14px;opacity:0.6;}
+  .divider{width:1px;height:14px;background:var(--line);}
+
+  /* ── SECTIONS ── */
+  .section{margin-bottom:48px;}
+  .section-header{
+    display:flex;align-items:flex-start;gap:20px;margin-bottom:28px;
+    padding-bottom:20px;border-bottom:1px solid var(--line);
+  }
+  .section-num{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;
+    color:var(--blue-bright);letter-spacing:0.1em;
+    background:rgba(0,112,243,0.12);border:1px solid rgba(0,112,243,0.2);
+    border-radius:4px;padding:4px 10px;white-space:nowrap;margin-top:3px;flex-shrink:0;
+  }
+  .section-title{font-size:1.25rem;font-weight:600;color:#fff;letter-spacing:-0.01em;}
+  .section-desc{font-size:14px;color:var(--muted);margin-top:4px;font-weight:400;}
+
+  /* ── CARDS ── */
+  .card-grid{display:grid;gap:14px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 24px;
+    display:flex;align-items:flex-start;gap:18px;
+    transition:border-color 0.2s,background 0.2s;
+    position:relative;overflow:hidden;
+  }
+  .card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,var(--blue-bright),var(--blue-glow));
+    border-radius:0;
+  }
+  .card:hover{border-color:rgba(0,112,243,0.35);background:rgba(0,28,60,0.75);}
+  .card-icon{
+    width:36px;height:36px;flex-shrink:0;
+    background:rgba(0,112,243,0.1);border:1px solid rgba(0,112,243,0.2);
+    border-radius:8px;display:flex;align-items:center;justify-content:center;
+  }
+  .card-icon svg{width:16px;height:16px;stroke:var(--blue-bright);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+  .card-body{}
+  .card-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:5px;}
+  .card-text{font-size:13.5px;color:var(--muted);line-height:1.65;}
+
+  /* ── RIGHTS PANEL ── */
+  .rights-panel{
+    background:rgba(0,20,40,0.5);border:1px solid var(--line);
+    border-radius:12px;padding:28px 30px;
+  }
+  .rights-text{font-size:15px;color:#b8d4f0;line-height:1.75;}
+  .rights-text strong{color:var(--blue-bright);font-weight:600;}
+  .zero-badge{
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--blue-bright);background:rgba(0,112,243,0.12);
+    border:1px solid rgba(0,112,243,0.25);border-radius:4px;
+    padding:2px 9px;letter-spacing:0.08em;vertical-align:middle;margin:0 2px;
+  }
+
+  /* ── CONTACT ── */
+  .contact{
+    margin-top:56px;
+    border:1px dashed rgba(0,112,243,0.3);
+    border-radius:14px;padding:36px;
+    text-align:center;
+    background:rgba(0,16,36,0.5);
+    position:relative;overflow:hidden;
+  }
+  .contact::after{
+    content:'';position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);
+    width:300px;height:120px;background:rgba(0,80,200,0.12);
+    border-radius:50%;filter:blur(40px);pointer-events:none;
+  }
+  .contact-label{
+    font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:400;
+    color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .contact-text{font-size:15px;color:#b8d4f0;margin-bottom:20px;}
+  .contact-btn{
+    display:inline-flex;align-items:center;gap:10px;
+    background:rgba(0,112,243,0.15);border:1px solid rgba(0,112,243,0.35);
+    color:var(--blue-bright);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:500;
+    border-radius:8px;padding:11px 22px;cursor:pointer;
+    text-decoration:none;
+    transition:background 0.2s,border-color 0.2s;
+  }
+  .contact-btn:hover{background:rgba(0,112,243,0.25);border-color:rgba(59,158,255,0.5);}
+  .contact-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── FOOTER ── */
+  .footer{
+    margin-top:56px;padding-top:24px;
+    border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+  .footer-brand{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
+    display:flex;align-items:center;gap:8px;
+  }
+  .footer-brand strong{color:var(--blue-bright);}
+  .footer-copy{font-size:12px;color:rgba(90,138,184,0.5);font-family:'JetBrains Mono',monospace;}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Privacy Directive</h1>
-        <div class="last-updated">Last Synchronized: May 2026</div>
-        <p>This document outlines the data protocols for the <strong>Azure Wraith Discord Bot</strong>. We prioritize user anonymity and server integrity above all else.</p>
-        <h2>1. Data Acquisition (What We See)</h2>
-        <ul>
-            <li><strong>Snowflake Identifiers:</strong> We store Discord User, Server, and Channel IDs to link settings to your specific environment.</li>
-            <li><strong>Interaction Metadata:</strong> Logs of command usage are kept temporarily to optimize bot performance and troubleshoot bugs.</li>
-            <li><strong>Invite Matrix Data:</strong> To provide invite tracking, we monitor and store vanity and standard invite usage patterns.</li>
-            <li><strong>Content Filtering:</strong> Automated systems scan message hashes to detect and prevent spam/scam outbreaks.</li>
-        </ul>
-        <h2>2. Data Utilization (How We Use It)</h2>
-        <ul>
-            <li><strong>Infrastructure Management:</strong> Powering the modern UI panels and utility dashboards.</li>
-            <li><strong>Community Progression:</strong> Calculating activity weights to award roles and permissions.</li>
-            <li><strong>Security Enforcement:</strong> Maintaining a safe "Void" through heuristic moderation.</li>
-        </ul>
-        <h2>3. Data Sovereignty (Your Rights)</h2>
-        <p>We believe in <strong>Zero-Persistence</strong> for non-essential data. When the Azure Wraith bot is removed from a server, all associated guild data is flagged for permanent deletion from our active buffers.</p>
-        <div class="contact-box">
-            Questions regarding data integrity? Contact the Lead Architect: <strong>Azure Wraith</strong> via the official Community Server.
-        </div>
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="tag">
+      <span class="tag-dot"></span>
+      Azure Wraith — Privacy Directive
     </div>
+    <h1>Your Data,<br><span>Our Responsibility</span></h1>
+    <p class="subtitle">A transparent breakdown of how Azure Wraith handles, stores, and protects your information across every server it operates in.</p>
+    <div class="meta-row">
+      <div class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Last synchronized: May 2026
+      </div>
+      <div class="divider"></div>
+      <div class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        3 data protocols
+      </div>
+      <div class="divider"></div>
+      <div class="meta-item">
+        <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap:round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        v2.0 — 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01 / ACQ</span>
+      <div>
+        <div class="section-title">Data Acquisition</div>
+        <div class="section-desc">What we observe and record during bot operation</div>
+      </div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Snowflake Identifiers</div>
+          <div class="card-text">Discord User, Server, and Channel IDs are stored to anchor settings and configurations to your specific environment — nothing more.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Interaction Metadata</div>
+          <div class="card-text">Command usage logs are retained temporarily to optimize performance and resolve bugs. These logs are non-persistent by design.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Invite Matrix Data</div>
+          <div class="card-text">Vanity and standard invite usage patterns are monitored and stored exclusively to power our invite tracking feature suite.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Content Filtering</div>
+          <div class="card-text">Automated systems scan message hashes — not raw content — to detect and neutralize spam and scam outbreaks across the Void.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02 / USE</span>
+      <div>
+        <div class="section-title">Data Utilization</div>
+        <div class="section-desc">How collected data is put to work</div>
+      </div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Infrastructure Management</div>
+          <div class="card-text">Powering the modern UI panels, utility dashboards, and control surfaces that make Azure Wraith's interface feel seamless.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Community Progression</div>
+          <div class="card-text">Activity weights are calculated from interaction data to fairly award roles, permissions, and progression milestones.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Security Enforcement</div>
+          <div class="card-text">Heuristic moderation algorithms run continuously to maintain a safe Void — detecting anomalous patterns before they escalate.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03 / RIGHTS</span>
+      <div>
+        <div class="section-title">Data Sovereignty</div>
+        <div class="section-desc">Your rights over the data we hold</div>
+      </div>
+    </div>
+    <div class="rights-panel">
+      <p class="rights-text">
+        We operate under a strict <span class="zero-badge">ZERO-PERSISTENCE</span> policy for all non-essential data. 
+        This means that the moment <strong>Azure Wraith</strong> is removed from your server, every piece of associated 
+        guild data is immediately flagged for permanent deletion from our active buffers — no archives, no shadows, no remnants.
+      </p>
+      <br>
+      <p class="rights-text" style="color:rgba(90,138,184,0.75);font-size:13.5px;">
+        You retain the right to request data review or deletion at any time, even while the bot remains active in your server. 
+        Reach out via the official Community Server and the Lead Architect will respond to your inquiry.
+      </p>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact">
+    <div class="contact-label">Data Integrity Inquiries</div>
+    <p class="contact-text">Have questions about how your data is handled? The Lead Architect is available through the official Azure Wraith Community Server.</p>
+    <a class="contact-btn" href="#">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Contact via Community Server
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-brand">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b9eff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <strong>Azure Wraith</strong> — Privacy Directive
+    </div>
+    <div class="footer-copy">© 2026 Azure Wraith. All rights reserved.</div>
+  </div>
+
+</div>
 </body>
 </html>
