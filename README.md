@@ -1,45 +1,41 @@
-# 🌌 Azure Wraith Discord Bot
+# 🌌 AZURE WRAITH
+### *Central Intelligence & Community Nexus*
 
-![License](https://img.shields.io/github/license/AzureWraith/Bot?color=007FFF&style=for-the-badge)
-![Discord](https://img.shields.io/badge/Discord-Azure%20Wraith-001F3F?style=for-the-badge&logo=discord&logoColor=white)
-
-The official automated backbone of the **Azure Wraith Community**. This custom bot architecture orchestrates community engagement, server analytics, algorithmic moderation, and automated onboarding experiences, wrapped completely within our signature **Ethereal Tech** visual standard.
+**Azure Wraith** is a high-fidelity Discord bot meticulously engineered to serve as the structural backbone for its namesake community[cite: 1]. It operates at the intersection of aesthetic precision and high-performance automation, ensuring that the digital void remains a premium environment for its members[cite: 1].
 
 ---
 
-## 🎨 Visual Identity & Branding
-The bot strictly implements the Azure Wraith design palette across all system notifications, interactive button components, context modals, and embed payloads:
+## 🎨 Design Philosophy: Ethereal Tech
+The interface design is strictly governed by the Azure Wraith palette, ensuring a consistent visual signature across every user interaction[cite: 1]:
 
-* **Primary Light:** `Azure White` (`#F0F8FF` / `0xF0F8FF`) — Utilized for critical highlights, headers, and system-success signals.
-* **Signature Accent:** `Wraith Blue` (`#007FFF` / `0x007FFF`) — Applied to structural embed sidebars, primary UI buttons, and link callbacks.
-* **Core Canvas:** `Deep Void` (`#001F3F` / `0x001F3F`) — Defines our background tone, logging contexts, and dark-mode optimization parameters.
-
----
-
-## 🚀 Core Systems
-
-### 🛡️ Algorithmic Guard System
-* **Heuristic Content Analysis:** Scans inbound messages for structural patterns matching spam or malicious exploits.
-* **Dynamic Rate-Limiting:** Intercepts rapid API floods and implements micro-quarantines on misbehaving clients before server latency degrades.
-* **Secure Logging Pipeline:** Streams system events, mod actions, and text edits into restricted audit matrices for full operational trace-ability.
-
-### 📊 Engagement & Analytics Engine
-* **Persistent Activity Indexing:** Measures textual and vocal velocity metric weights to accurately map organic server engagement trends over time.
-* **Role Progression Hooks:** Triggers tier upgrades dynamically as users cross configured activity metadata thresholds.
-* **Custom Rich Embed Delivery:** Bundles graphics, fields, and micro-branding accents to broadcast high-fidelity announcements cleanly to targeted sub-groups.
-
-### 🛠️ Interactive Interface Ecosystem
-* **Modern Components First:** Leverages native Discord buttons, select dropdown select-menus, and layout modals to eliminate legacy prefix-command clutter.
-* **Ethereal Profiles:** Generates personalized visual report-cards showcasing community status, registration timelines, and server privileges.
+*   **The Light (`Azure White`)**: Used for critical clarity, success states, and primary iconography to ensure legibility against dark Discord backgrounds[cite: 1].
+*   **The Pulse (`Wraith Blue`)**: The primary energetic accent for buttons, embed sidebars, and call-to-action elements[cite: 1].
+*   **The Void (`Deep Void`)**: A deep navy foundation used for structured data logs and secondary visual depth[cite: 1].
 
 ---
 
-## 🧱 Architecture Overview
-The system relies on an asynchronous event-driven layout optimized for multi-threading and minimum process blockages:
-* **State Control:** Maintains local execution integrity while querying real-time configurations from isolated environment files.
-* **Data Integrity:** Features strict database models enforcing consistent write protocols across all persistence layers.
-* **Event Handling:** Decouples event listening from background task runners, preventing execution locks during unexpected high-throughput server spikes.
+## 🏛️ System Pillars
+
+### 🛡️ Guard & Integrity 
+Unlike standard moderation tools, the Azure Wraith bot utilizes heuristic analysis to detect patterns of disruption[cite: 1]. It provides a secure logging pipeline that streams all server events into a restricted audit matrix for complete operational oversight[cite: 1].
+
+### 📊 Metric & Progression 
+The bot monitors server velocity through persistent activity indexing[cite: 1]. It maps community growth in real-time, allowing for dynamic role progression based on deep metadata analysis of member engagement[cite: 1].
+
+### 🛠️ Modern Interface 
+Designed for the modern Discord era, the bot prioritizes interactive components like selection menus and modals[cite: 1]. This removes the clutter of traditional text commands in favor of a sleek, application-like experience[cite: 1].
 
 ---
 
-> **Azure Wraith Community** > *Where the digital void meets the azure light.*
+## 🧩 Architectural Core
+The framework is built on an asynchronous, event-driven model designed to handle extreme throughput without latency spikes[cite: 1]. By decoupling event listeners from background tasks, the system maintains a high state of integrity even during peak community activity[cite: 1].
+
+---
+
+## 📜 Legal & Usage
+The Azure Wraith source code and its associated assets are **strictly protected by a software license**[cite: 1]. All rights regarding modification, distribution, and private use are governed by the legal terms specified within the project repository[cite: 1].
+
+---
+
+> **Azure Wraith Community**  
+> *Where the digital void meets the azure light.*[cite: 1]
