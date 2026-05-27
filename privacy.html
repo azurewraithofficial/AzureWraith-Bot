@@ -3,44 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy | Azure Wraith</title>
+    <title>Privacy Directive | Azure Wraith</title>
     <style>
-        :root { --void: #001F3F; --azure: #F0F8FF; --wraith: #007FFF; }
-        body { background-color: var(--void); color: var(--azure); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
-        .wrapper { max-width: 900px; margin: 40px auto; background: rgba(255, 255, 255, 0.03); padding: 40px; border-radius: 12px; border: 1px solid rgba(0, 127, 255, 0.2); }
-        h1 { color: var(--wraith); border-bottom: 2px solid var(--wraith); padding-bottom: 10px; }
-        h2 { color: var(--wraith); margin-top: 30px; }
-        .footer { margin-top: 50px; font-size: 0.8em; opacity: 0.6; text-align: center; }
+        :root { --void: #000c1a; --deep-void: #001F3F; --wraith-blue: #007FFF; --azure: #F0F8FF; --glass: rgba(240, 248, 255, 0.03); }
+        body { background: radial-gradient(circle at top right, #002b5c, var(--void)); color: var(--azure); font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.8; margin: 0; padding: 40px 20px; }
+        .container { max-width: 850px; margin: auto; background: var(--glass); backdrop-filter: blur(10px); padding: 50px; border-radius: 24px; border: 1px solid rgba(0, 127, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        h1 { color: var(--wraith-blue); font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 10px; }
+        .last-updated { opacity: 0.5; font-size: 0.9rem; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
+        h2 { color: var(--wraith-blue); font-size: 1.4rem; margin-top: 40px; display: flex; align-items: center; }
+        h2::before { content: '◈'; margin-right: 15px; font-size: 1rem; opacity: 0.7; }
+        ul { list-style: none; padding: 0; }
+        li { background: rgba(0, 127, 255, 0.05); margin-bottom: 10px; padding: 12px 20px; border-radius: 8px; border-left: 3px solid var(--wraith-blue); }
+        strong { color: var(--wraith-blue); }
+        .contact-box { margin-top: 50px; padding: 30px; border-radius: 15px; background: rgba(0, 127, 255, 0.1); text-align: center; border: 1px dashed var(--wraith-blue); }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <h1>Privacy Policy</h1>
-        <p>Last Updated: May 2026</p>
-        
-        <p>Azure Wraith ("we," "our," or "the Bot") is committed to protecting the privacy of our community members. This policy explains what data we use to provide our services.</p>
+    <div class="container">
+        <h1>Privacy Directive</h1>
+        <div class="last-updated">Last Synchronized: May 2026</div>
 
-        <h2>1. Data Collection</h2>
-        <p>To provide utility and tracking features, the Bot processes the following Discord data:</p>
+        <p>This document outlines the data protocols for the <strong>Azure Wraith Discord Bot</strong>. We prioritize user anonymity and server integrity above all else.</p>
+
+        <h2>1. Data Acquisition (What We See)</h2>
         <ul>
-            <li><strong>User Identifiers:</strong> Discord User IDs are stored to track invites and community activity.</li>
-            <li><strong>Server Data:</strong> Server IDs and channel IDs are stored to save your custom panel settings.</li>
-            <li><strong>Invite Data:</strong> We monitor invite codes to provide "who invited who" statistics.</li>
+            <li><strong>Snowflake Identifiers:</strong> We store Discord User, Server, and Channel IDs to link settings to your specific environment.</li>
+            <li><strong>Interaction Metadata:</strong> Logs of command usage are kept temporarily to optimize bot performance and troubleshoot bugs.</li>
+            <li><strong>Invite Matrix Data:</strong> To provide invite tracking, we monitor and store vanity and standard invite usage patterns.</li>
+            <li><strong>Content Filtering:</strong> Automated systems scan message hashes to detect and prevent spam/scam outbreaks.</li>
         </ul>
 
-        <h2>2. Data Usage</h2>
-        <p>Data is used exclusively for:
-            <ul>
-                <li>Operating modern utility panels and buttons.</li>
-                <li>Tracking invite metrics for server growth.</li>
-                <li>Automating community roles and moderation.</li>
-            </ul>
-        </p>
+        <h2>2. Data Utilization (How We Use It)</h2>
+        <ul>
+            <li><strong>Infrastructure Management:</strong> Powering the modern UI panels and utility dashboards.</li>
+            <li><strong>Community Progression:</strong> Calculating activity weights to award roles and permissions.</li>
+            <li><strong>Security Enforcement:</strong> Maintaining a safe "Void" through heuristic moderation.</li>
+        </ul>
 
-        <h2>3. Data Security & Deletion</h2>
-        <p>We do not sell or share user data with third parties. Data is stored securely and is deleted automatically if the Bot is kicked from a server. You may request manual data removal by contacting the owner, <strong>Azure Wraith</strong>, via our support channels.</p>
+        <h2>3. Data Sovereignty (Your Rights)</h2>
+        <p>We believe in <strong>Zero-Persistence</strong> for non-essential data. When the Azure Wraith bot is removed from a server, all associated guild data is flagged for permanent deletion from our active buffers.</p>
 
-        <div class="footer">© 2026 Azure Wraith Community. Not affiliated with Discord Inc.</div>
+        <div class="contact-box">
+            Questions regarding data integrity? Contact the Lead Architect: <strong>Azure Wraith</strong> via the official Community Server.
+        </div>
     </div>
 </body>
 </html>
