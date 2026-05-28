@@ -1,9 +1,4 @@
-# Dependency directories
 node_modules/
-
-# Local environment variables (PRIVATE)
 .env
-
-# Logs and OS files
 npm-debug.log*
 .DS_Store
