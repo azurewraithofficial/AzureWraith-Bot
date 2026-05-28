@@ -5,37 +5,43 @@ export const data = new SlashCommandBuilder()
     .setDescription('Executes high-fidelity quantum latency diagnostics for Azure Wraith.');
 
 export async function execute(interaction) {
-    // Helper function to build the sleek status bar
-    const createProgressBar = (ms) => {
-        if (ms < 40)  return '🟦🟦⬜⬜⬜⬜⬜⬜⬜⬜'; // Hyper-fast (Azure Blue)
-        if (ms < 100) return '🔷🔷🔷⬜⬜⬜⬜⬜⬜⬜'; // Excellent
-        if (ms < 180) return '🔷🔷🔷🔷🔷⬜⬜⬜⬜⬜'; // Moderate
-        return '🔶🔶🔶🔶🔶🔶🔶⬜⬜⬜'; // Spiking
+    // Custom Emojis Markdown Mapping for Embed text
+    const emoji = {
+        signal: '<:Signal:1509557241127112817>',
+        planet: '<:Planet:1509557252388950056>',
+        streamer: '<:Streamer:1509557227785027807>',
+        bell: '<:Bell:1509557209363775638>'
     };
 
-    // Helper to generate the exact embed design
+    const createProgressBar = (ms) => {
+        if (ms < 40)  return '🟦🟦⬜⬜⬜⬜⬜⬜⬜⬜';
+        if (ms < 100) return '🔷🔷🔷⬜⬜⬜⬜⬜⬜⬜';
+        if (ms < 180) return '🔷🔷🔷🔷🔷⬜⬜⬜⬜⬜';
+        return '🔶🔶🔶🔶🔶🔶🔶⬜⬜⬜';
+    };
+
     const generateEmbed = (client, user, guild, roundTrip, apiLatency) => {
         const totalUptime = Math.floor(process.uptime());
         const hours = Math.floor(totalUptime / 3600);
         const minutes = Math.floor((totalUptime % 3600) / 60);
         
         return new EmbedBuilder()
-            .setColor('#007FFF') // Premium Azure Blue
-            .setTitle('⚡ AZURE WRAITH COMMAND CORE // ONLINE')
+            .setColor('#007FFF') 
+            .setTitle(`${emoji.planet} AZURE WRAITH COMMAND CORE // ONLINE`)
             .setDescription(`\`\`\`ml\n[ SYSTEM TELEMETRY ]: SECURE LINK STABLE\n[ RE-ROUTING POOL  ]: ACTIVE\n\`\`\``)
             .addFields(
                 { 
-                    name: '📡 GATEWAY LATENCY', 
+                    name: `${emoji.signal} GATEWAY LATENCY`, 
                     value: `> ⏳ **${roundTrip} ms**\n\`${createProgressBar(roundTrip)}\``, 
                     inline: true 
                 },
                 { 
-                    name: '🌐 WEBSOCKET HEARTBEAT', 
+                    name: `${emoji.streamer} WEBSOCKET HEARTBEAT`, 
                     value: `> 💓 **${apiLatency} ms**\n\`${createProgressBar(apiLatency)}\``, 
                     inline: true 
                 },
                 {
-                    name: '📋 HOST DATA STACK',
+                    name: `${emoji.bell} HOST DATA STACK`,
                     value: `\`\`\`prolog\n• Platform: Railway Cloud\n• Node Engine: ${process.version}\n• Host Uptime: ${hours}h ${minutes}m\n\`\`\``,
                     inline: false
                 }
@@ -48,48 +54,43 @@ export async function execute(interaction) {
             });
     };
 
-    // 1. Capture initial calculation
     const startTime = Date.now();
     await interaction.deferReply();
     let roundTrip = Date.now() - startTime;
     let apiLatency = Math.round(interaction.client.ws.ping);
 
-    // 2. Build Interactive Buttons
     const getButtons = (isDisabled = false) => new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('refresh_ping')
             .setLabel('Re-Route Connection')
-            .setEmoji('⚡')
-            .setStyle(ButtonStyle.Primary) // Deep blurple/blue button
+            .setEmoji('1509557241127112817') // Passes raw ID for Signal custom emoji
+            .setStyle(ButtonStyle.Primary)
             .setDisabled(isDisabled),
 
         new ButtonBuilder()
             .setLabel('Cloud Metrics')
-            .setEmoji('📊')
+            .setEmoji('1509557252388950056') // Passes raw ID for Planet custom emoji
             .setURL('https://status.railway.app/')
             .setStyle(ButtonStyle.Link),
 
         new ButtonBuilder()
             .setLabel('Discord Core')
-            .setEmoji('🌐')
+            .setEmoji('1509557227785027807') // Passes raw ID for Streamer custom emoji
             .setURL('https://discordstatus.com/')
             .setStyle(ButtonStyle.Link)
     );
 
-    // 3. Post the Initial Interactive Panel
     const response = await interaction.editReply({
         embeds: [generateEmbed(interaction.client, interaction.user, interaction.guild, roundTrip, apiLatency)],
         components: [getButtons(false)]
     });
 
-    // 4. Component Collector (Listens for button interactions live for 60 seconds)
     const collector = response.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 60000 
     });
 
     collector.on('collect', async (btnInteraction) => {
-        // Enforce security: Only the user who cast /ping can trigger the re-route animation
         if (btnInteraction.user.id !== interaction.user.id) {
             return btnInteraction.reply({ 
                 content: '🛑 Access Denied. Run your own `/ping` command to test your routing diagnostics.', 
@@ -98,42 +99,37 @@ export async function execute(interaction) {
         }
 
         if (btnInteraction.customId === 'refresh_ping') {
-            // Acknowledge click and trigger visual transition overlay
             await btnInteraction.update({
                 embeds: [
                     new EmbedBuilder()
-                        .setColor('#FFA500') // Warning orange during sync
-                        .setTitle('⚡ AZURE WRAITH COMMAND CORE // SYNCING')
+                        .setColor('#FFA500') 
+                        .setTitle(`${emoji.planet} AZURE WRAITH COMMAND CORE // SYNCING`)
                         .setDescription(`\`\`\`ml\n[ SYSTEM TELEMETRY ]: RE-CALIBRATING CORE FIELDS...\n[ RE-ROUTING POOL  ]: PINGING BACKBONE ROUTERS...\n\`\`\``)
                         .setFooter({ text: 'STAND BY FOR HIGH-FIDELITY UPDATE...' })
                 ],
-                components: [getButtons(true)] // Disable buttons temporarily during recalculation
+                components: [getButtons(true)]
             });
 
-            // Brief mock-delay to ensure network socket settles
             await new Promise(resolve => setTimeout(resolve, 800));
 
-            // Recalculate fresh runtime speed metrics
             const newStartTime = Date.now();
             const newApiLatency = Math.round(interaction.client.ws.ping);
-            const newRoundTrip = Date.now() - newStartTime + 12; // Compensate for event loop tick
+            const newRoundTrip = Date.now() - newStartTime + 12;
 
-            // Write back updated panel dashboard values seamlessly
             await interaction.editReply({
                 embeds: [generateEmbed(interaction.client, interaction.user, interaction.guild, newRoundTrip, newApiLatency)],
-                components: [getButtons(false)] // Unlock interface elements
+                components: [getButtons(false)]
             });
         }
     });
 
-    // 5. Clean up when the collector expires (gray out the button after 60s)
     collector.on('end', async () => {
         try {
             await interaction.editReply({
-                components: [getButtons(true)] // Permanently lock execution elements
+                components: [getButtons(true)]
             });
         } catch {
-            // Safe ignore if message or context was deleted by user
+            // Context deleted safe exit
         }
     });
 }
