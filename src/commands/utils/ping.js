@@ -5,7 +5,6 @@ export const data = new SlashCommandBuilder()
     .setDescription('Replies with Pong and latency statistics!');
 
 export async function execute(interaction) {
-    // Calculate the round-trip latency
     const sent = await interaction.reply({ content: '🏓 Pinging...', fetchReply: true });
     const latency = sent.createdTimestamp - interaction.createdTimestamp;
     const apiPing = Math.round(interaction.client.ws.ping);
