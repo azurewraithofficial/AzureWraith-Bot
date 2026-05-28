@@ -1,30 +1,45 @@
-import { REST, Routes, PermissionFlagsBits } from 'discord.js';
+import { REST, Routes } from 'discord.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import 'dotenv/config';
 
-// Ensure environment variables exist
 if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {
     console.error("❌ ERROR: Missing DISCORD_TOKEN or CLIENT_ID in environment.");
     process.exit(1);
 }
 
-// Temporary hardcoded command for testing the deployer
-const commands = [
-    {
-        name: 'ping',
-        description: 'Replies with Pong!',
-    }
-];
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const commands = [];
 
-// Construct and prepare an instance of the REST module
+// Path to your commands directory
+const foldersPath = path.join(__dirname, 'src', 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        // Convert file path to a URL format for ES Modules compatibility
+        const fileUrl = pathToFileURL(filePath).href;
+        const command = await import(fileUrl);
+        
+        if ('data' in command && 'execute' in command) {
+            commands.push(command.data.toJSON());
+        } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
+    }
+}
+
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
-// Deploy the commands to Discord
 (async () => {
     try {
         console.log(`🔄 Started refreshing ${commands.length} application (/) commands.`);
 
-        // Routes.applicationCommands registers GLOBAL commands (available in all servers)
-        // Note: Global commands can take up to 10 minutes to cache/appear everywhere the first time
         await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands },
