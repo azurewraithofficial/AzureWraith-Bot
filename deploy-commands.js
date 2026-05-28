@@ -12,7 +12,6 @@ if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const commands = [];
 
-// Path to your commands directory
 const foldersPath = path.join(__dirname, 'src', 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -22,14 +21,11 @@ for (const folder of commandFolders) {
     
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
-        // Convert file path to a URL format for ES Modules compatibility
         const fileUrl = pathToFileURL(filePath).href;
         const command = await import(fileUrl);
         
         if ('data' in command && 'execute' in command) {
             commands.push(command.data.toJSON());
-        } else {
-            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
     }
 }
@@ -39,12 +35,10 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 (async () => {
     try {
         console.log(`🔄 Started refreshing ${commands.length} application (/) commands.`);
-
         await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands },
         );
-
         console.log(`✅ Successfully reloaded application (/) commands.`);
     } catch (error) {
         console.error('❌ Error deploying commands:', error);
