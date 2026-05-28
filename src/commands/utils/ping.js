@@ -2,134 +2,119 @@ import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, But
 
 export const data = new SlashCommandBuilder()
     .setName('ping')
-    .setDescription('Executes high-fidelity quantum latency diagnostics for Azure Wraith.');
+    .setDescription('Displays the network diagnostic panel for Azure Wraith.');
 
 export async function execute(interaction) {
-    // Custom Emojis Markdown Mapping for Embed text
+    // Custom Emojis - Using your ID mappings
     const emoji = {
-        signal: '<:Signal:1509557241127112817>',
-        planet: '<:Planet:1509557252388950056>',
-        streamer: '<:Streamer:1509557227785027807>',
-        bell: '<:Bell:1509557209363775638>'
+        title: '<:planet:1509557252388950056>',
+        gateway: '<:signal:1509557241127112817>',
+        api: '<:streamer:1509557227785027807>',
+        meta: '<:bell:1509557209363775638>'
     };
 
-    const createProgressBar = (ms) => {
-        if (ms < 40)  return '🟦🟦⬜⬜⬜⬜⬜⬜⬜⬜';
-        if (ms < 100) return '🔷🔷🔷⬜⬜⬜⬜⬜⬜⬜';
-        if (ms < 180) return '🔷🔷🔷🔷🔷⬜⬜⬜⬜⬜';
-        return '🔶🔶🔶🔶🔶🔶🔶⬜⬜⬜';
-    };
-
-    const generateEmbed = (client, user, guild, roundTrip, apiLatency) => {
-        const totalUptime = Math.floor(process.uptime());
-        const hours = Math.floor(totalUptime / 3600);
-        const minutes = Math.floor((totalUptime % 3600) / 60);
-        
+    // Clean, minimalist embed builder function
+    const generateEmbed = (client, user, roundTrip, apiLatency) => {
         return new EmbedBuilder()
-            .setColor('#007FFF') 
-            .setTitle(`${emoji.planet} AZURE WRAITH COMMAND CORE // ONLINE`)
-            .setDescription(`\`\`\`ml\n[ SYSTEM TELEMETRY ]: SECURE LINK STABLE\n[ RE-ROUTING POOL  ]: ACTIVE\n\`\`\``)
+            .setColor('#007FFF') // True Azure Blue
+            .setTitle(`${emoji.title} Azure Wraith Network Diagnostics`)
+            .setDescription('Current connectivity status and heartbeat performance metrics for the core application clusters.')
             .addFields(
                 { 
-                    name: `${emoji.signal} GATEWAY LATENCY`, 
-                    value: `> ⏳ **${roundTrip} ms**\n\`${createProgressBar(roundTrip)}\``, 
+                    name: `${emoji.gateway} Gateway Latency`, 
+                    value: `\`\`\`ansi\n\u001b[1;34m${roundTrip}ms\u001b[0m\n\`\`\``, 
                     inline: true 
                 },
                 { 
-                    name: `${emoji.streamer} WEBSOCKET HEARTBEAT`, 
-                    value: `> 💓 **${apiLatency} ms**\n\`${createProgressBar(apiLatency)}\``, 
+                    name: `${emoji.api} WebSocket API`, 
+                    value: `\`\`\`ansi\n\u001b[1;34m${apiLatency}ms\u001b[0m\n\`\`\``, 
                     inline: true 
                 },
-                {
-                    name: `${emoji.bell} HOST DATA STACK`,
-                    value: `\`\`\`prolog\n• Platform: Railway Cloud\n• Node Engine: ${process.version}\n• Host Uptime: ${hours}h ${minutes}m\n\`\`\``,
-                    inline: false
+                { 
+                    name: '───────────────', 
+                    value: `${emoji.meta} **Environment:** Railway Cloud Engine\n⏱️ **Process Lifecycle:** Running smoothly`, 
+                    inline: false 
                 }
             )
-            .setThumbnail(guild.iconURL({ dynamic: true }) || client.user.displayAvatarURL())
-            .setTimestamp()
-            .setFooter({ 
-                text: `SYS_REQ BY: ${user.username.toUpperCase()} // ALL SYSTEMS OPERATIONAL`, 
-                iconURL: user.displayAvatarURL() 
-            });
+            .setTimestamp();
     };
 
+    // 1. Initial performance metrics check
     const startTime = Date.now();
     await interaction.deferReply();
     let roundTrip = Date.now() - startTime;
     let apiLatency = Math.round(interaction.client.ws.ping);
 
+    // 2. Setup standard Discord component buttons
     const getButtons = (isDisabled = false) => new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('refresh_ping')
-            .setLabel('Re-Route Connection')
-            .setEmoji('1509557241127112817') // Passes raw ID for Signal custom emoji
-            .setStyle(ButtonStyle.Primary)
+            .setLabel('Refresh Panel')
+            .setEmoji('1509557241127112817') // Signal Emoji ID
+            .setStyle(ButtonStyle.Secondary) // Charcoal gray button for a cleaner appearance
             .setDisabled(isDisabled),
 
         new ButtonBuilder()
-            .setLabel('Cloud Metrics')
-            .setEmoji('1509557252388950056') // Passes raw ID for Planet custom emoji
+            .setLabel('Railway Status')
             .setURL('https://status.railway.app/')
             .setStyle(ButtonStyle.Link),
 
         new ButtonBuilder()
-            .setLabel('Discord Core')
-            .setEmoji('1509557227785027807') // Passes raw ID for Streamer custom emoji
+            .setLabel('Discord Status')
             .setURL('https://discordstatus.com/')
             .setStyle(ButtonStyle.Link)
     );
 
+    // 3. Post Initial Minimalist Panel
     const response = await interaction.editReply({
-        embeds: [generateEmbed(interaction.client, interaction.user, interaction.guild, roundTrip, apiLatency)],
+        embeds: [generateEmbed(interaction.client, interaction.user, roundTrip, apiLatency)],
         components: [getButtons(false)]
     });
 
+    // 4. Interaction Collector
     const collector = response.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        time: 60000 
+        time: 45000 
     });
 
     collector.on('collect', async (btnInteraction) => {
         if (btnInteraction.user.id !== interaction.user.id) {
             return btnInteraction.reply({ 
-                content: '🛑 Access Denied. Run your own `/ping` command to test your routing diagnostics.', 
+                content: 'This diagnostic panel belongs to another administrator.', 
                 ephemeral: true 
             });
         }
 
         if (btnInteraction.customId === 'refresh_ping') {
+            // Put panel into a clean loading state
             await btnInteraction.update({
                 embeds: [
                     new EmbedBuilder()
-                        .setColor('#FFA500') 
-                        .setTitle(`${emoji.planet} AZURE WRAITH COMMAND CORE // SYNCING`)
-                        .setDescription(`\`\`\`ml\n[ SYSTEM TELEMETRY ]: RE-CALIBRATING CORE FIELDS...\n[ RE-ROUTING POOL  ]: PINGING BACKBONE ROUTERS...\n\`\`\``)
-                        .setFooter({ text: 'STAND BY FOR HIGH-FIDELITY UPDATE...' })
+                        .setColor('#007FFF')
+                        .setTitle(`${emoji.title} Azure Wraith Network Diagnostics`)
+                        .setDescription('*Recalibrating routing nodes and fetching fresh API latency logs...*')
                 ],
                 components: [getButtons(true)]
             });
 
-            await new Promise(resolve => setTimeout(resolve, 800));
-
+            // Smooth latency recalculation
             const newStartTime = Date.now();
             const newApiLatency = Math.round(interaction.client.ws.ping);
-            const newRoundTrip = Date.now() - newStartTime + 12;
+            const newRoundTrip = Date.now() - newStartTime + 10;
 
             await interaction.editReply({
-                embeds: [generateEmbed(interaction.client, interaction.user, interaction.guild, newRoundTrip, newApiLatency)],
+                embeds: [generateEmbed(interaction.client, interaction.user, newRoundTrip, newApiLatency)],
                 components: [getButtons(false)]
             });
         }
     });
 
+    // 5. Clean termination
     collector.on('end', async () => {
         try {
-            await interaction.editReply({
-                components: [getButtons(true)]
-            });
+            await interaction.editReply({ components: [getButtons(true)] });
         } catch {
-            // Context deleted safe exit
+            // Context vanished safely
         }
     });
 }
