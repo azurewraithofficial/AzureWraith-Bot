@@ -1,0 +1,14 @@
+{
+  "name": "azure-wraith-community-bot",
+  "version": "1.0.0",
+  "description": "Community Discord bot for Azure Wraith",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
