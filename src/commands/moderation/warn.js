@@ -32,41 +32,64 @@ export async function execute(interaction) {
     // Keep response hidden to staff to protect command processing privacy
     await interaction.deferReply({ ephemeral: true });
 
-    // 1. Safety Checks
+    // ────────────────────────────────────────────────────────────────────────
+    // 1. SAFETY INFRASTRUCTURE VALIDATION CHECKS
+    // ────────────────────────────────────────────────────────────────────────
+    
+    // Check A: Target user is not present in the server guild
     if (!targetMember) {
         return interaction.editReply({
             embeds: [
                 new EmbedBuilder()
-                    .setColor('#FF3333')
-                    .setTitle(`${emoji.warning} Error`)
-                    .setDescription('>>> That user is not in this server.')
+                    .setColor('#FF3333') // Alert Crimson
+                    .setTitle(`${emoji.warning} Command Execution Failure`)
+                    .setDescription(`>>> **Target Null:** The selected user profile cannot be processed because they are not an active member of this server registry space.`)
+                    .addFields({ 
+                        name: '───────────────', 
+                        value: `${emoji.bell} **Resolution:** Please verify the snowflake ID or handle string entry before attempting to retry the execution block.`, 
+                        inline: false 
+                    })
             ]
         });
     }
 
+    // Check B: Executor attempting to warn their own account profile
     if (targetUser.id === interaction.user.id) {
         return interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor('#FF3333')
-                    .setTitle(`${emoji.warning} Error`)
-                    .setDescription('>>> You cannot issue a warning to yourself.')
+                    .setTitle(`${emoji.warning} Command Execution Failure`)
+                    .setDescription(`>>> **Self-Target Lock:** You are attempting to dispatch a formal disciplinary infraction log to your own personal profile index.`)
+                    .addFields({ 
+                        name: '───────────────', 
+                        value: `${emoji.bell} **Resolution:** Self-moderation matrices are disabled. Please isolate an external target member.`, 
+                        inline: false 
+                    })
             ]
         });
     }
 
+    // Check C: Target user resolves to an automated network application bot
     if (targetUser.bot) {
         return interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor('#FF3333')
-                    .setTitle(`${emoji.warning} Error`)
-                    .setDescription('>>> Automated bot accounts cannot be added to the warning tracking system.')
+                    .setTitle(`${emoji.warning} Command Execution Failure`)
+                    .setDescription(`>>> **Automated Account:** The designated target account resolves to a Discord client application bot instead of a human entity profile.`)
+                    .addFields({ 
+                        name: '───────────────', 
+                        value: `${emoji.bell} **Resolution:** Platform applications are globally immune to server profile infraction tracking structures.`, 
+                        inline: false 
+                    })
             ]
         });
     }
 
-    // 2. Role Hierarchy Check
+    // ────────────────────────────────────────────────────────────────────────
+    // 2. ROLE HIERARCHY PROTECTION GATE
+    // ────────────────────────────────────────────────────────────────────────
     const executorHighestRole = interaction.member.roles.highest.position;
     const targetHighestRole = targetMember.roles.highest.position;
 
@@ -75,24 +98,43 @@ export async function execute(interaction) {
             embeds: [
                 new EmbedBuilder()
                     .setColor('#FF3333')
-                    .setTitle(`${emoji.warning} Error`)
-                    .setDescription('>>> You cannot warn this user because their role is higher than or equal to yours.')
+                    .setTitle(`${emoji.warning} Hierarchy Privilege Violation`)
+                    .setDescription(`>>> **Access Denied:** Your administrative role clearance rank is insufficient to deploy tracking vectors or command modifiers to this server user.`)
+                    .addFields(
+                        { 
+                            name: `${emoji.staff} __YOUR SYSTEM POSITION__`, 
+                            value: `* **Highest Role Rank:** \`Level ${executorHighestRole}\``, 
+                            inline: true 
+                        },
+                        { 
+                            name: `${emoji.member} __TARGET SYSTEM POSITION__`, 
+                            value: `* **Highest Role Rank:** \`Level ${targetHighestRole}\``, 
+                            inline: true 
+                        },
+                        { 
+                            name: '───────────────', 
+                            value: `${emoji.bell} **Notice:** You can only issue disciplinary actions to member accounts positioned strictly below your highest role layer assignment.`, 
+                            inline: false 
+                        }
+                    )
             ]
         });
     }
 
-    // 3. Execution Phase
+    // ────────────────────────────────────────────────────────────────────────
+    // 3. EXECUTION DISPATCH MATRIX
+    // ────────────────────────────────────────────────────────────────────────
     try {
-        // Send a direct message warning to the member
+        // Send a private direct message warning to the member account file
         const dmEmbed = new EmbedBuilder()
             .setColor('#FF3333')
             .setTitle(`${emoji.warning} Official Server Warning`)
-            .setDescription(`>>> You have received a formal warning in the **${interaction.guild.name}** server. Please review our community rules to avoid further penalties.`)
+            .setDescription(`>>> You have received a formal warning in the **${interaction.guild.name}** server environment. Please review our official network rules to avoid escalation.`)
             .addFields({ name: 'Reason for Warning', value: `\`\`\`\n${reason}\n\`\`\`` })
             .setTimestamp();
 
         await targetUser.send({ embeds: [dmEmbed] }).catch(() => {
-            // DMs are closed, ignore and continue to print the staff log
+            // DMs are locked or blocked, suppress error cascade and log data directly
         });
 
         // 4. Success Confirmation Embed matching your layout design
@@ -131,12 +173,25 @@ export async function execute(interaction) {
         await interaction.editReply({ embeds: [successEmbed] });
 
     } catch (error) {
+        // 5. System runtime exception safety block
         return interaction.editReply({
             embeds: [
                 new EmbedBuilder()
                     .setColor('#FF3333')
-                    .setTitle(`${emoji.warning} System Error`)
-                    .setDescription(`>>> Failed to issue the warning process:\n\`\`\`js\n${error.message}\n\`\`\``)
+                    .setTitle(`${emoji.warning} Runtime Exception Detected`)
+                    .setDescription(`>>> The application layer core encountered an unhandled processing exception while attempting to build the moderation data packet.`)
+                    .addFields(
+                        { 
+                            name: '__UNHANDLED TRACE EXCEPTION__', 
+                            value: `\`\`\`js\n${error.message}\n\`\`\``, 
+                            inline: false 
+                        },
+                        { 
+                            name: '───────────────', 
+                            value: `${emoji.bell} **Notice:** If this internal exception block persists across multiple deployment cycles, route the trace report logs to system development.`, 
+                            inline: false 
+                        }
+                    )
             ]
         });
     }
