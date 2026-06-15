@@ -86,6 +86,9 @@ export async function execute(interaction) {
         }
 
         if (btnInteraction.customId === 'refresh_ping') {
+            // Start timing BEFORE the network request to capture actual gateway round-trip latency
+            const newStartTime = Date.now();
+
             // Put panel into a clean loading state
             await btnInteraction.update({
                 embeds: [
@@ -97,10 +100,9 @@ export async function execute(interaction) {
                 components: [getButtons(true)]
             });
 
-            // Smooth latency recalculation
-            const newStartTime = Date.now();
+            // Smooth latency recalculation based on the update action's network duration
+            const newRoundTrip = Date.now() - newStartTime;
             const newApiLatency = Math.round(interaction.client.ws.ping);
-            const newRoundTrip = Date.now() - newStartTime + 10;
 
             await interaction.editReply({
                 embeds: [generateEmbed(interaction.client, interaction.user, newRoundTrip, newApiLatency)],
