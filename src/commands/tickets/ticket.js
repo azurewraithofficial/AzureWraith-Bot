@@ -1,4 +1,17 @@
-import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, PermissionFlagsBits, ChannelType } from 'discord.js';
+import { 
+    SlashCommandBuilder, 
+    EmbedBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ComponentType, 
+    PermissionFlagsBits, 
+    ChannelType,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    AttachmentBuilder
+} from 'discord.js';
 
 export const data = new SlashCommandBuilder()
     .setName('ticket')
@@ -17,13 +30,15 @@ export async function execute(interaction) {
         member: '<:Member:1509557217961967716>',
         mark: '<:Mark:1509557248534253568>',
         bell: '<:Bell:1509557209363775638>',
-        warning: '<:Warning:1509557251181117500>'
+        warning: '<:Warning:1509557251181117500>',
+        timeout: '<:Timeout:1509557597383168160>'
     };
 
+    const TRANSCRIPT_CHANNEL_ID = '1508526671333036193';
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand === 'panel') {
-        // Clean, minimalist panel embed builder function
+        // Main channel greeting layout
         const generatePanelEmbed = () => {
             return new EmbedBuilder()
                 .setColor('#007FFF') // True Azure Blue
@@ -57,41 +72,36 @@ export async function execute(interaction) {
                 .setTimestamp();
         };
 
-        // Create the interactive button to trigger ticket creation
         const getPanelButtons = () => new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('create_support_ticket')
                 .setLabel('Open Support Ticket')
-                .setEmoji('1509557210861142186') // Staff Emoji ID
+                .setEmoji('1509557210861142186')
                 .setStyle(ButtonStyle.Primary)
         );
 
-        // Deploy directly as a standalone message inside the channel
+        // Print standalone main screen
         const response = await interaction.channel.send({
             embeds: [generatePanelEmbed()],
             components: [getPanelButtons()]
         });
 
-        // Send a hidden confirmation to the administrator who ran the command
         await interaction.reply({
             content: 'The support ticket interface panel has been deployed below.',
             ephemeral: true
         });
 
-        // High-duration message component collector to listen for member clicks
-        const collector = response.createMessageComponentCollector({
-            componentType: ComponentType.Button,
-            time: 86400000 // Active for 24 hours (Note: For absolute permanence across bot reboots, handle this in index.js)
+        const panelCollector = response.createMessageComponentCollector({
+            componentType: ComponentType.Button
         });
 
-        collector.on('collect', async (btnInteraction) => {
+        panelCollector.on('collect', async (btnInteraction) => {
             if (btnInteraction.customId === 'create_support_ticket') {
                 await btnInteraction.deferReply({ ephemeral: true });
 
                 const guild = btnInteraction.guild;
                 const user = btnInteraction.user;
 
-                // Check if a ticket channel already exists for this user to prevent spam
                 const existingChannel = guild.channels.cache.find(c => c.name === `ticket-${user.username.toLowerCase()}`);
                 if (existingChannel) {
                     return btnInteraction.editReply({
@@ -105,7 +115,7 @@ export async function execute(interaction) {
                 }
 
                 try {
-                    // Create the private text channel matching structural requirements
+                    // Create private support channel node
                     const ticketChannel = await guild.channels.create({
                         name: `ticket-${user.username}`,
                         type: ChannelType.GuildText,
@@ -126,32 +136,34 @@ export async function execute(interaction) {
                         ]
                     });
 
-                    // Construct the internal ticket channel introduction screen
-                    const welcomeEmbed = new EmbedBuilder()
-                        .setColor('#007FFF') // True Azure Blue
-                        .setTitle(`${emoji.staff} Support Ticket Initialized`)
-                        .setDescription(`Welcome to your private support room, ${user}. The moderation team has been notified.`)
+                    // Inside-channel control panel options setup
+                    const ticketControlEmbed = new EmbedBuilder()
+                        .setColor('#007FFF')
+                        .setTitle(`${emoji.staff} Support Ticket Active`)
+                        .setDescription(`Welcome to your private support room, ${user}. The moderation team has been notified.\n\nStaff can utilize the management command grid below to route this request.`)
                         .addFields(
-                            {
-                                name: `${emoji.member} __INSTRUCTIONS__`,
-                                value: 'Please state your question or problem clearly right here. Include any details or media links that might help us resolve it faster.',
-                                inline: false
-                            },
-                            {
-                                name: `${emoji.warning} __CLOSING THE TICKET__`,
-                                value: 'When your support request is finished and completely resolved, a staff member will archive and close this channel.',
-                                inline: false
-                            }
+                            { name: `${emoji.member} __TICKET OWNER__`, value: `* **User:** ${user}\n* **Account ID:** \`${user.id}\``, inline: true },
+                            { name: `${emoji.staff} __ASSIGNED STAFF__`, value: `* **Status:** Unclaimed / Pending Assistance`, inline: true }
                         )
                         .setTimestamp();
 
-                    // Send the message into the newly constructed channel
-                    await ticketChannel.send({
-                        content: `${user} | Staff Notification`,
-                        embeds: [welcomeEmbed]
+                    const row1 = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder().setCustomId('claim_ticket').setLabel('Claim Ticket').setStyle(ButtonStyle.Success),
+                        new ButtonBuilder().setCustomId('unclaim_ticket').setLabel('Unclaim Ticket').setStyle(ButtonStyle.Secondary)
+                    );
+
+                    const row2 = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder().setCustomId('close_ticket').setLabel('Close Ticket').setStyle(ButtonStyle.Danger),
+                        new ButtonBuilder().setCustomId('close_reason_ticket').setLabel('Close With Reason').setStyle(ButtonStyle.Danger)
+                    );
+
+                    const controlMessage = await ticketChannel.send({
+                        content: `${user} | Staff Notification Matrix`,
+                        embeds: [ticketControlEmbed],
+                        components: [row1, row2]
                     });
 
-                    // Update the user's interaction panel button with a direct link success status
+                    // Acknowledge the user link connection
                     await btnInteraction.editReply({
                         embeds: [
                             new EmbedBuilder()
@@ -159,6 +171,83 @@ export async function execute(interaction) {
                                 .setTitle(`${emoji.mark} Ticket Created`)
                                 .setDescription(`>>> Your secure communication line has been established successfully at ${ticketChannel}.`)
                         ]
+                    });
+
+                    // ─── LOCAL TICKETING SYSTEM MANAGEMENT MATRIX ───
+                    const channelCollector = controlMessage.createMessageComponentCollector({
+                        componentType: ComponentType.Button
+                    });
+
+                    channelCollector.on('collect', async (ticketBtnInteraction) => {
+                        const isStaff = ticketBtnInteraction.member.permissions.has(PermissionFlagsBits.ModerateMembers);
+                        const actionId = ticketBtnInteraction.customId;
+
+                        // Authorization guard rails
+                        if (!isStaff && ['claim_ticket', 'unclaim_ticket', 'close_reason_ticket'].includes(actionId)) {
+                            return ticketBtnInteraction.reply({
+                                content: 'This operations vector is strictly restricted to authorized server staff members.',
+                                ephemeral: true
+                            });
+                        }
+
+                        // 1. CLAIM PROTOCOL
+                        if (actionId === 'claim_ticket') {
+                            const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
+                                .setFields(
+                                    { name: `${emoji.member} __TICKET OWNER__`, value: `* **User:** ${user}\n* **Account ID:** \`${user.id}\``, inline: true },
+                                    { name: `${emoji.staff} __ASSIGNED STAFF__`, value: `* **Status:** Claimed by ${ticketBtnInteraction.user}`, inline: true }
+                                );
+
+                            await ticketBtnInteraction.update({ embeds: [updatedEmbed] });
+                            await ticketChannel.send({ content: `${emoji.mark} This ticket is now being handled by ${ticketBtnInteraction.user}.` });
+                        }
+
+                        // 2. UNCLAIM PROTOCOL
+                        if (actionId === 'unclaim_ticket') {
+                            const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
+                                .setFields(
+                                    { name: `${emoji.member} __TICKET OWNER__`, value: `* **User:** ${user}\n* **Account ID:** \`${user.id}\``, inline: true },
+                                    { name: `${emoji.staff} __ASSIGNED STAFF__`, value: `* **Status:** Unclaimed / Pending Assistance`, inline: true }
+                                );
+
+                            await ticketBtnInteraction.update({ embeds: [updatedEmbed] });
+                            await ticketChannel.send({ content: `${emoji.timeout} The staff assignment has been removed. This ticket is back in the open queue.` });
+                        }
+
+                        // 3. CLOSE TICKET (Standard)
+                        if (actionId === 'close_ticket') {
+                            await ticketBtnInteraction.reply({ content: `${emoji.warning} Closure protocol initialized. Archiving logs and preparing room deletion...` });
+                            await processTicketArchival(ticketChannel, ticketBtnInteraction.user, 'No closure rationale specified.', guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
+                        }
+
+                        // 4. CLOSE WITH REASON (Staff Modal Input Box)
+                        if (actionId === 'close_reason_ticket') {
+                            const modal = new ModalBuilder()
+                                .setCustomId('ticket_close_modal')
+                                .setTitle('Close Support Ticket');
+
+                            const reasonInput = new TextInputBuilder()
+                                .setCustomId('ticket_close_reason')
+                                .setLabel('Reason for closing this ticket?')
+                                .setStyle(TextInputStyle.Paragraph)
+                                .setRequired(true)
+                                .setPlaceholder('Type your official support resolution summary here...');
+
+                            modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
+                            await ticketBtnInteraction.showModal(modal);
+
+                            // Capture input submission from user interface
+                            const modalSubmit = await ticketBtnInteraction.awaitModalSubmit({
+                                filter: i => i.customId === 'ticket_close_modal',
+                                time: 60000
+                            }).catch(() => null);
+
+                            if (modalSubmit) {
+                                const formalReason = modalSubmit.fields.getTextInputValue('ticket_close_reason');
+                                await modalSubmit.reply({ content: `${emoji.warning} Termination sequence locked. Compiling history index log...` });
+                                await processTicketArchival(ticketChannel, ticketBtnInteraction.user, formalReason, guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
+                            }
+                        }
                     });
 
                 } catch (error) {
@@ -173,5 +262,52 @@ export async function execute(interaction) {
                 }
             }
         });
+    }
+}
+
+// ─── DATA COMPILATION AND TRANSCRIPT PACKAGING ENGINE ───
+async function processTicketArchival(channel, executor, reason, guild, owner, emoji, logChannelId) {
+    try {
+        // Fetch up to 100 historical message strings from the channel registry
+        const fetchedMessages = await channel.messages.fetch({ limit: 100 });
+        let transcriptString = `==================================================\n`;
+        transcriptString += `AZURE WRAITH NETWORK TICKET TRANSCRIPT LOG\n`;
+        transcriptString += `Channel Identifier: ${channel.name}\n`;
+        transcriptString += `Account Owner: ${owner.tag} (${owner.id})\n`;
+        transcriptString += `Closed Executed By: ${executor.tag} (${executor.id})\n`;
+        transcriptString += `Closure Reason Given: ${reason}\n`;
+        transcriptString += `==================================================\n\n`;
+
+        fetchedMessages.reverse().forEach(msg => {
+            const timestamp = msg.createdAt.toISOString().replace('T', ' ').substring(0, 19);
+            transcriptString += `[${timestamp}] ${msg.author.tag}: ${msg.content}\n`;
+        });
+
+        // Convert data into a physical storage document payload attachment
+        const textBuffer = Buffer.from(transcriptString, 'utf-8');
+        const fileAttachment = new AttachmentBuilder(textBuffer, { name: `transcript-${channel.name}.txt` });
+
+        // Construct log file delivery print
+        const archiveEmbed = new EmbedBuilder()
+            .setColor('#007FFF')
+            .setTitle(`${emoji.staff} Ticket Archive Logged`)
+            .setDescription(`>>> A private text room channel has been closed and fully logged inside the data registers.`)
+            .addFields(
+                { name: `${emoji.member} __TICKET ATTRIBUTES__`, value: `* **Channel Name:** \`${channel.name}\`\n* **Opened By:** ${owner} (\`${owner.id}\`)`, inline: false },
+                { name: `${emoji.staff} __CLOSURE OPERATION__`, value: `* **Operator:** ${executor} (\`${executor.id}\`)\n* **Reason Matrix:** \`${reason}\``, inline: false }
+            )
+            .setTimestamp();
+
+        const logDestination = await guild.channels.fetch(logChannelId).catch(() => null);
+        if (logDestination) {
+            await logDestination.send({ embeds: [archiveEmbed], files: [fileAttachment] });
+        }
+
+        // Delay 5 seconds to prevent memory leaks before running full deletion cascade
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        await channel.delete().catch(() => null);
+
+    } catch (err) {
+        await channel.send({ content: `Critical tracking error failed to export historical text transcripts: ${err.message}` }).catch(() => null);
     }
 }
