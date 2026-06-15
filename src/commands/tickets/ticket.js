@@ -36,7 +36,8 @@ export async function execute(interaction) {
         mark: '<:Mark:1509557248534253568>',
         bell: '<:Bell:1509557209363775638>',
         warning: '<:Warning:1509557251181117500>',
-        timeout: '<:Timeout:1509557597383168160>'
+        timeout: '<:Timeout:1509557597383168160>',
+        refresh: '<:Refresh:1509557065713188874>'
     };
 
     const TRANSCRIPT_CHANNEL_ID = '1508526671333036193';
@@ -191,6 +192,7 @@ export async function execute(interaction) {
                             });
                         }
 
+                        // 1. CLAIM PROTOCOL
                         if (actionId === 'claim_ticket') {
                             const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
                                 .setFields(
@@ -202,7 +204,23 @@ export async function execute(interaction) {
                             await ticketChannel.send({ content: `${emoji.mark} This ticket is now being handled by ${ticketBtnInteraction.user}.` });
                         }
 
+                        // 2. UNCLAIM PROTOCOL (With Validation Security Guard)
                         if (actionId === 'unclaim_ticket') {
+                            const currentEmbed = controlMessage.embeds[0];
+                            const staffField = currentEmbed.fields.find(f => f.name.includes('ASSIGNED STAFF'));
+
+                            if (!staffField || staffField.value.includes('Unclaimed')) {
+                                return ticketBtnInteraction.reply({
+                                    embeds: [
+                                        new EmbedBuilder()
+                                            .setColor('#FF3333')
+                                            .setTitle(`${emoji.warning} Action Denied`)
+                                            .setDescription('>>> This support ticket cannot be unclaimed because it is not currently assigned to any staff member.')
+                                    ],
+                                    ephemeral: true
+                                });
+                            }
+
                             const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
                                 .setFields(
                                     { name: `${emoji.member} __TICKET OWNER__`, value: `* **User:** ${user}\n* **Account ID:** \`${user.id}\``, inline: true },
@@ -213,11 +231,13 @@ export async function execute(interaction) {
                             await ticketChannel.send({ content: `${emoji.timeout} The staff assignment has been removed. This ticket is back in the open queue.` });
                         }
 
+                        // 3. CLOSE TICKET (Standard)
                         if (actionId === 'close_ticket') {
-                            await ticketBtnInteraction.reply({ content: `${emoji.warning} Closure protocol initialized. Archiving logs and preparing room deletion...` });
-                            await processTicketArchival(ticketChannel, ticketBtnInteraction.user, 'No closure rationale specified.', guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
+                            await ticketBtnInteraction.deferUpdate();
+                            await initiateTicketClosure(ticketChannel, ticketBtnInteraction.user, 'No closure rationale specified.', guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
                         }
 
+                        // 4. CLOSE WITH REASON (Staff Modal Input Box)
                         if (actionId === 'close_reason_ticket') {
                             const modal = new ModalBuilder()
                                 .setCustomId('ticket_close_modal')
@@ -239,9 +259,9 @@ export async function execute(interaction) {
                             }).catch(() => null);
 
                             if (modalSubmit) {
+                                await modalSubmit.deferUpdate();
                                 const formalReason = modalSubmit.fields.getTextInputValue('ticket_close_reason');
-                                await modalSubmit.reply({ content: `${emoji.warning} Termination sequence locked. Compiling history index log...` });
-                                await processTicketArchival(ticketChannel, ticketBtnInteraction.user, formalReason, guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
+                                await initiateTicketClosure(ticketChannel, ticketBtnInteraction.user, formalReason, guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
                             }
                         }
                     });
@@ -266,14 +286,12 @@ export async function execute(interaction) {
     if (subcommand === 'dashboard') {
         await interaction.deferReply({ ephemeral: true });
 
-        // Helper function to scan channels and transcripts to build the live embed list
         const fetchDashboardData = async (filterType) => {
             const guild = interaction.guild;
             const openChannels = guild.channels.cache.filter(c => c.type === ChannelType.GuildText && c.name.startsWith('ticket-'));
             
             let activeTickets = [];
 
-            // Parse open channels to extract claimed state records dynamically
             for (const [id, channel] of openChannels) {
                 const messages = await channel.messages.fetch({ limit: 15 }).catch(() => null);
                 let claimedBy = null;
@@ -295,11 +313,10 @@ export async function execute(interaction) {
             }
 
             const dashboardEmbed = new EmbedBuilder()
-                .setColor('#007FFF') // True Azure Blue
+                .setColor('#007FFF')
                 .setTitle(`${emoji.staff} Ticket Management Infrastructure`)
                 .setTimestamp();
 
-            // Handle compilation lists based on filter state configurations
             if (filterType === 'all' || filterType === 'claimed' || filterType === 'unclaimed') {
                 let filtered = activeTickets;
                 if (filterType === 'claimed') filtered = activeTickets.filter(t => t.status === 'claimed');
@@ -366,7 +383,7 @@ export async function execute(interaction) {
 
         const dashCollector = dashboardMessage.createMessageComponentCollector({
             componentType: ComponentType.Button,
-            time: 300000 // Active for 5 minutes of direct staff filtering work
+            time: 300000 
         });
 
         dashCollector.on('collect', async (dashInteraction) => {
@@ -377,7 +394,6 @@ export async function execute(interaction) {
             if (btnId === 'dash_unclaimed') activeFilter = 'unclaimed';
             if (btnId === 'dash_claimed') activeFilter = 'claimed';
             if (btnId === 'dash_closed') activeFilter = 'closed';
-            // 'dash_refresh' keeps the current activeFilter value but pulls fresh logs
 
             const updatedDashboard = await fetchDashboardData(activeFilter);
             await interaction.editReply({
@@ -388,19 +404,104 @@ export async function execute(interaction) {
 
         dashCollector.on('end', async () => {
             try {
-                // Disable components completely when panel session tracking window closes
                 const disabledRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('d1').setLabel('Session Expired').setStyle(ButtonStyle.Secondary).setDisabled(true)
                 );
                 await interaction.editReply({ components: [disabledRow] });
             } catch {
-                // Handle context loss cleanly
+                // Suppress context loss errors cleanly
             }
         });
     }
 }
 
-// ─── DATA COMPILATION AND TRANSCRIPT PACKAGING ENGINE ───
+// ────────────────────────────────────────────────────────────────────────
+// 3. INTERACTIVE COUNTDOWN & CANCELLATION PROTOCOL ENGINE
+// ────────────────────────────────────────────────────────────────────────
+async function initiateTicketClosure(channel, executor, reason, guild, owner, emoji, logChannelId) {
+    const COUNTDOWN_SECONDS = 10;
+    const futureDeletionTimestamp = Math.floor((Date.now() + COUNTDOWN_SECONDS * 1000) / 1000);
+
+    const countdownEmbed = new EmbedBuilder()
+        .setColor('#FF3333') // Alert Crimson
+        .setTitle(`${emoji.warning} Ticket Closure Sequence Locked`)
+        .setDescription(
+            `>>> This support channel has been queued for execution by **${executor.username}**.\n\n` +
+            `All structural channel spaces and active messaging databases will be permanently deleted and wiped **<t:${futureDeletionTimestamp}:R>**.`
+        )
+        .addFields({ name: 'Reason for Closure', value: `\`\`\`\n${reason}\n\`\`\`` })
+        .setTimestamp();
+
+    const cancelRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('abort_ticket_closure')
+            .setLabel('Cancel Deletion')
+            .setEmoji('1509557251181117500') // Warning Emoji
+            .setStyle(ButtonStyle.Secondary)
+    );
+
+    const countdownMessage = await channel.send({
+        embeds: [countdownEmbed],
+        components: [cancelRow]
+    });
+
+    const closureCollector = countdownMessage.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: COUNTDOWN_SECONDS * 1000
+    });
+
+    let closureAborted = false;
+
+    closureCollector.on('collect', async (btnInteract) => {
+        const isStaff = btnInteract.member.permissions.has(PermissionFlagsBits.ModerateMembers);
+        
+        if (!isStaff) {
+            return btnInteract.reply({
+                content: 'Access Denied. Only authorized staff members can abort active channel destruction arrays.',
+                ephemeral: true
+            });
+        }
+
+        if (btnInteract.customId === 'abort_ticket_closure') {
+            closureAborted = true;
+            closureCollector.stop('aborted');
+
+            const abortEmbed = new EmbedBuilder()
+                .setColor('#007FFF') // True Azure Blue
+                .setTitle(`${emoji.mark} Termination Sequence Cancelled`)
+                .setDescription(`>>> The ticket destruction array was intercepted and aborted successfully by ${btnInteract.user}. This private line remains active.`)
+                .setTimestamp();
+
+            await btnInteract.update({
+                embeds: [abortEmbed],
+                components: []
+            });
+        }
+    });
+
+    closureCollector.on('end', async (collected, endReason) => {
+        // If the deletion sequence was intercepted, do not wipe the channel space
+        if (closureAborted || endReason === 'aborted') return;
+
+        // Render button processing state as execution sequence finalized
+        const processingRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('processing')
+                .setLabel('Archiving & Purging Database...')
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(true)
+        );
+
+        await countdownMessage.edit({ components: [processingRow] }).catch(() => null);
+
+        // Run final log export data compiling cascade immediately
+        await processTicketArchival(channel, executor, reason, guild, owner, emoji, logChannelId);
+    });
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// 4. DATA COMPILATION AND TRANSCRIPT PACKAGING ENGINE
+// ────────────────────────────────────────────────────────────────────────
 async function processTicketArchival(channel, executor, reason, guild, owner, emoji, logChannelId) {
     try {
         const fetchedMessages = await channel.messages.fetch({ limit: 100 });
@@ -435,7 +536,7 @@ async function processTicketArchival(channel, executor, reason, guild, owner, em
             await logDestination.send({ embeds: [archiveEmbed], files: [fileAttachment] });
         }
 
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        // Instant channel elimination cascade
         await channel.delete().catch(() => null);
 
     } catch (err) {
