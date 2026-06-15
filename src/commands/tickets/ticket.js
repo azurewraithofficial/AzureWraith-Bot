@@ -21,7 +21,12 @@ export const data = new SlashCommandBuilder()
             .setName('panel')
             .setDescription('Deploys the interactive support ticket creation panel.')
     )
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
+    .addSubcommand(subcommand =>
+        subcommand
+            .setName('dashboard')
+            .setDescription('Opens the ticket management and filtering dashboard panel.')
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
 
 export async function execute(interaction) {
     // Custom Emojis - Using your verified asset IDs
@@ -37,8 +42,10 @@ export async function execute(interaction) {
     const TRANSCRIPT_CHANNEL_ID = '1508526671333036193';
     const subcommand = interaction.options.getSubcommand();
 
+    // ────────────────────────────────────────────────────────────────────────
+    // 1. TICKET PANEL SUBCOMMAND
+    // ────────────────────────────────────────────────────────────────────────
     if (subcommand === 'panel') {
-        // Main channel greeting layout
         const generatePanelEmbed = () => {
             return new EmbedBuilder()
                 .setColor('#007FFF') // True Azure Blue
@@ -80,7 +87,6 @@ export async function execute(interaction) {
                 .setStyle(ButtonStyle.Primary)
         );
 
-        // Print standalone main screen
         const response = await interaction.channel.send({
             embeds: [generatePanelEmbed()],
             components: [getPanelButtons()]
@@ -115,7 +121,6 @@ export async function execute(interaction) {
                 }
 
                 try {
-                    // Create private support channel node
                     const ticketChannel = await guild.channels.create({
                         name: `ticket-${user.username}`,
                         type: ChannelType.GuildText,
@@ -136,7 +141,6 @@ export async function execute(interaction) {
                         ]
                     });
 
-                    // Inside-channel control panel options setup
                     const ticketControlEmbed = new EmbedBuilder()
                         .setColor('#007FFF')
                         .setTitle(`${emoji.staff} Support Ticket Active`)
@@ -163,7 +167,6 @@ export async function execute(interaction) {
                         components: [row1, row2]
                     });
 
-                    // Acknowledge the user link connection
                     await btnInteraction.editReply({
                         embeds: [
                             new EmbedBuilder()
@@ -173,7 +176,6 @@ export async function execute(interaction) {
                         ]
                     });
 
-                    // ─── LOCAL TICKETING SYSTEM MANAGEMENT MATRIX ───
                     const channelCollector = controlMessage.createMessageComponentCollector({
                         componentType: ComponentType.Button
                     });
@@ -182,7 +184,6 @@ export async function execute(interaction) {
                         const isStaff = ticketBtnInteraction.member.permissions.has(PermissionFlagsBits.ModerateMembers);
                         const actionId = ticketBtnInteraction.customId;
 
-                        // Authorization guard rails
                         if (!isStaff && ['claim_ticket', 'unclaim_ticket', 'close_reason_ticket'].includes(actionId)) {
                             return ticketBtnInteraction.reply({
                                 content: 'This operations vector is strictly restricted to authorized server staff members.',
@@ -190,7 +191,6 @@ export async function execute(interaction) {
                             });
                         }
 
-                        // 1. CLAIM PROTOCOL
                         if (actionId === 'claim_ticket') {
                             const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
                                 .setFields(
@@ -202,7 +202,6 @@ export async function execute(interaction) {
                             await ticketChannel.send({ content: `${emoji.mark} This ticket is now being handled by ${ticketBtnInteraction.user}.` });
                         }
 
-                        // 2. UNCLAIM PROTOCOL
                         if (actionId === 'unclaim_ticket') {
                             const updatedEmbed = EmbedBuilder.from(controlMessage.embeds[0])
                                 .setFields(
@@ -214,13 +213,11 @@ export async function execute(interaction) {
                             await ticketChannel.send({ content: `${emoji.timeout} The staff assignment has been removed. This ticket is back in the open queue.` });
                         }
 
-                        // 3. CLOSE TICKET (Standard)
                         if (actionId === 'close_ticket') {
                             await ticketBtnInteraction.reply({ content: `${emoji.warning} Closure protocol initialized. Archiving logs and preparing room deletion...` });
                             await processTicketArchival(ticketChannel, ticketBtnInteraction.user, 'No closure rationale specified.', guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
                         }
 
-                        // 4. CLOSE WITH REASON (Staff Modal Input Box)
                         if (actionId === 'close_reason_ticket') {
                             const modal = new ModalBuilder()
                                 .setCustomId('ticket_close_modal')
@@ -236,7 +233,6 @@ export async function execute(interaction) {
                             modal.addComponents(new ActionRowBuilder().addComponents(reasonInput));
                             await ticketBtnInteraction.showModal(modal);
 
-                            // Capture input submission from user interface
                             const modalSubmit = await ticketBtnInteraction.awaitModalSubmit({
                                 filter: i => i.customId === 'ticket_close_modal',
                                 time: 60000
@@ -263,12 +259,150 @@ export async function execute(interaction) {
             }
         });
     }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // 2. TICKET MANAGEMENT DASHBOARD SUBCOMMAND
+    // ────────────────────────────────────────────────────────────────────────
+    if (subcommand === 'dashboard') {
+        await interaction.deferReply({ ephemeral: true });
+
+        // Helper function to scan channels and transcripts to build the live embed list
+        const fetchDashboardData = async (filterType) => {
+            const guild = interaction.guild;
+            const openChannels = guild.channels.cache.filter(c => c.type === ChannelType.GuildText && c.name.startsWith('ticket-'));
+            
+            let activeTickets = [];
+
+            // Parse open channels to extract claimed state records dynamically
+            for (const [id, channel] of openChannels) {
+                const messages = await channel.messages.fetch({ limit: 15 }).catch(() => null);
+                let claimedBy = null;
+
+                if (messages) {
+                    const claimLog = messages.find(m => m.content.includes('This ticket is now being handled by'));
+                    if (claimLog) {
+                        claimedBy = claimLog.content.split('by ')[1] || 'Staff Member';
+                    }
+                }
+
+                activeTickets.push({
+                    channel: channel,
+                    name: channel.name,
+                    createdTimestamp: channel.createdTimestamp,
+                    claimedBy: claimedBy,
+                    status: claimedBy ? 'claimed' : 'unclaimed'
+                });
+            }
+
+            const dashboardEmbed = new EmbedBuilder()
+                .setColor('#007FFF') // True Azure Blue
+                .setTitle(`${emoji.staff} Ticket Management Infrastructure`)
+                .setTimestamp();
+
+            // Handle compilation lists based on filter state configurations
+            if (filterType === 'all' || filterType === 'claimed' || filterType === 'unclaimed') {
+                let filtered = activeTickets;
+                if (filterType === 'claimed') filtered = activeTickets.filter(t => t.status === 'claimed');
+                if (filterType === 'unclaimed') filtered = activeTickets.filter(t => t.status === 'unclaimed');
+
+                dashboardEmbed.setDescription(`>>> Displaying active server tickets matching your chosen view query filter: \`${filterType.toUpperCase()}\``);
+
+                if (filtered.length === 0) {
+                    dashboardEmbed.addFields({ name: 'Active Registry Index', value: `>>> No open tickets found matching the \`${filterType}\` status metric.` });
+                } else {
+                    let textList = '';
+                    filtered.forEach(t => {
+                        textList += `* ${emoji.mark} ${t.channel} (\`${t.name}\`)\n`;
+                        textList += `  * **Created:** <t:${Math.floor(t.createdTimestamp / 1000)}:R>\n`;
+                        textList += `  * **Assignment:** ${t.claimedBy ? `${t.claimedBy}` : `\`Unclaimed / Pending\``}\n\n`;
+                    });
+                    dashboardEmbed.addFields({ name: `Open Tickets Registry (${filtered.length})`, value: textList });
+                }
+            } else if (filterType === 'closed') {
+                dashboardEmbed.setDescription(`>>> Pulling historical data entries directly from the transcript channel registers.`);
+                
+                const logChannel = await guild.channels.fetch(TRANSCRIPT_CHANNEL_ID).catch(() => null);
+                if (!logChannel) {
+                    dashboardEmbed.addFields({ name: 'Data Pipeline Failure', value: '>>> Unable to establish link connection with designated transcript logging channel directory.' });
+                } else {
+                    const logMessages = await logChannel.messages.fetch({ limit: 10 }).catch(() => null);
+                    const archiveEmbeds = logMessages ? logMessages.filter(m => m.embeds.length > 0 && m.embeds[0].title.includes('Ticket Archive Logged')) : [];
+
+                    if (!archiveEmbeds || archiveEmbeds.size === 0) {
+                        dashboardEmbed.addFields({ name: 'Archive Logs Blank', value: '>>> No recently closed ticket archives discovered within the historical log registers.' });
+                    } else {
+                        let textList = '';
+                        archiveEmbeds.forEach(m => {
+                            const emb = m.embeds[0];
+                            const channelAttr = emb.fields.find(f => f.name.includes('TICKET ATTRIBUTES'))?.value || 'Unknown Name';
+                            const closureAttr = emb.fields.find(f => f.name.includes('CLOSURE OPERATION'))?.value || 'Unknown Operator';
+                            
+                            textList += `* ${emoji.timeout} **Archive Entry:** <t:${Math.floor(m.createdTimestamp / 1000)}:R>\n`;
+                            textList += `  ${channelAttr}\n  ${closureAttr}\n\n`;
+                        });
+                        dashboardEmbed.addFields({ name: 'Recent Closed Records Index', value: textList });
+                    }
+                }
+            }
+
+            return dashboardEmbed;
+        };
+
+        const getDashboardButtons = (currentFilter = 'all') => new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId('dash_all').setLabel('All Open').setStyle(currentFilter === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('dash_unclaimed').setLabel('Unclaimed').setStyle(currentFilter === 'unclaimed' ? ButtonStyle.Success : ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('dash_claimed').setLabel('Claimed').setStyle(currentFilter === 'claimed' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('dash_closed').setLabel('Closed Logs').setStyle(currentFilter === 'closed' ? ButtonStyle.Danger : ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('dash_refresh').setEmoji('1509557065713188874').setStyle(ButtonStyle.Secondary)
+        );
+
+        let activeFilter = 'all';
+        const initialEmbed = await fetchDashboardData(activeFilter);
+
+        const dashboardMessage = await interaction.editReply({
+            embeds: [initialEmbed],
+            components: [getDashboardButtons(activeFilter)]
+        });
+
+        const dashCollector = dashboardMessage.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: 300000 // Active for 5 minutes of direct staff filtering work
+        });
+
+        dashCollector.on('collect', async (dashInteraction) => {
+            await dashInteraction.deferUpdate();
+            
+            const btnId = dashInteraction.customId;
+            if (btnId === 'dash_all') activeFilter = 'all';
+            if (btnId === 'dash_unclaimed') activeFilter = 'unclaimed';
+            if (btnId === 'dash_claimed') activeFilter = 'claimed';
+            if (btnId === 'dash_closed') activeFilter = 'closed';
+            // 'dash_refresh' keeps the current activeFilter value but pulls fresh logs
+
+            const updatedDashboard = await fetchDashboardData(activeFilter);
+            await interaction.editReply({
+                embeds: [updatedDashboard],
+                components: [getDashboardButtons(activeFilter)]
+            });
+        });
+
+        dashCollector.on('end', async () => {
+            try {
+                // Disable components completely when panel session tracking window closes
+                const disabledRow = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('d1').setLabel('Session Expired').setStyle(ButtonStyle.Secondary).setDisabled(true)
+                );
+                await interaction.editReply({ components: [disabledRow] });
+            } catch {
+                // Handle context loss cleanly
+            }
+        });
+    }
 }
 
 // ─── DATA COMPILATION AND TRANSCRIPT PACKAGING ENGINE ───
 async function processTicketArchival(channel, executor, reason, guild, owner, emoji, logChannelId) {
     try {
-        // Fetch up to 100 historical message strings from the channel registry
         const fetchedMessages = await channel.messages.fetch({ limit: 100 });
         let transcriptString = `==================================================\n`;
         transcriptString += `AZURE WRAITH NETWORK TICKET TRANSCRIPT LOG\n`;
@@ -283,11 +417,9 @@ async function processTicketArchival(channel, executor, reason, guild, owner, em
             transcriptString += `[${timestamp}] ${msg.author.tag}: ${msg.content}\n`;
         });
 
-        // Convert data into a physical storage document payload attachment
         const textBuffer = Buffer.from(transcriptString, 'utf-8');
         const fileAttachment = new AttachmentBuilder(textBuffer, { name: `transcript-${channel.name}.txt` });
 
-        // Construct log file delivery print
         const archiveEmbed = new EmbedBuilder()
             .setColor('#007FFF')
             .setTitle(`${emoji.staff} Ticket Archive Logged`)
@@ -303,7 +435,6 @@ async function processTicketArchival(channel, executor, reason, guild, owner, em
             await logDestination.send({ embeds: [archiveEmbed], files: [fileAttachment] });
         }
 
-        // Delay 5 seconds to prevent memory leaks before running full deletion cascade
         await new Promise(resolve => setTimeout(resolve, 5000));
         await channel.delete().catch(() => null);
 
