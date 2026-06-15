@@ -26,45 +26,47 @@ export async function execute(interaction) {
             .setColor('#007FFF') // True Azure Blue
             .setTitle(`${emoji.title} Azure Wraith Server Protocol`)
             .setDescription(
-                '>>> Welcome to the network directory. To maintain a safe, stable, and clean environment for everyone, all members must follow the guidelines detailed below. Failing to follow these steps will trigger automated or manual moderation actions.'
+                '>>> Welcome to the community directory. To maintain a safe, stable, and welcoming environment for everyone, all members must follow the comprehensive guidelines detailed below. Violating these directives will result in moderation tracking.'
             )
             .addFields(
                 {
                     name: `${emoji.member} __GENERAL CONDUCT__`,
                     value: 
-                        `* **Be Respectful:** Treat everyone nicely. No bullying, hate speech, or mean comments allowed.\n` +
-                        `* **Follow Staff:** Listen to instructions from team members. The staff team has the final say.\n` +
-                        `* **No Drama:** Keep arguments, flame wars, and personal issues out of public text rooms.`,
+                        `* **Be Respectful:** Treat all community members with courtesy. Bullying, harassment, toxic behavior, insults, and hate speech are strictly prohibited.\n` +
+                        `* **Follow Staff Directions:** Listen to instructions given by the moderation team. Staff decisions are final and must be respected.\n` +
+                        `* **No Drama or Fighting:** Keep personal arguments, flame wars, and dramatic call-outs completely out of public text rooms.\n` +
+                        `* **No Impersonation:** Do not copy the profile pictures, names, or statuses of staff members, other creators, or automated system bots.\n` +
+                        `* **No Mini-Modding:** Do not try to enforce rules or threaten punishments yourself. Tag an active staff member if you see an issue.`,
                     inline: false
                 },
                 {
-                    name: `${emoji.sfw} __CHAT & CONTENT RULES__`,
+                    name: `${emoji.sfw} __CHAT & CONTENT GUIDELINES__`,
                     value: 
-                        `* **Keep It Safe:** Do not post explicit files, graphic content, or unsafe material. Keep all discussions strictly **SFW**.\n` +
-                        `* **No Spamming:** Do not flood chat channels with fast messages, huge blocks of text, or random tag walls.\n` +
-                        `* **Use Right Channels:** Post topics where they belong (e.g. general chat in general, bot commands in bot rooms).`,
+                        `* **Keep Content Safe:** Do not post explicit images, gore, graphic content, or unsafe files. Keep conversations strictly **SFW**.\n` +
+                        `* **No Spamming:** Do not flood chat boxes with rapid messages, massive text blocks, copy-pastes, or random mention tag walls.\n` +
+                        `* **Use Assigned Channels:** Keep topics where they belong. Use designated rooms for bot interactions, gaming, and off-topic media.\n` +
+                        `* **No Self-Promotion:** Do not share server invites, personal links, streams, or DM advertisements without explicit admin approval.\n` +
+                        `* **No Rule Loopholes:** Do not look for clever ways to bypass filters or exploit rule wording. Follow the clear spirit of these guidelines.`,
                     inline: false
                 },
                 {
                     name: `${emoji.warning} __THE WARNING SYSTEM__`,
                     value: 
-                        `We use an escalation framework to keep our channels secure. Breaking rules updates your account record:\n\n` +
-                        `\`[STAGE 01]\` ${emoji.mark} **Verbal Note:** A simple warning from a staff member to fix your behavior.\n` +
-                        `\`[STAGE 02]\` ${emoji.timeout} **Mute / Timeout:** Your ability to type or speak will be locked temporarily.\n` +
-                        `\`[STAGE 03]\` ${emoji.kick} **Server Kick:** You are removed from the server but can return if you get a new link.\n` +
-                        `\`[STAGE 04]\` ${emoji.ban} **Permanent Ban:** Your account identity is banned from the network indefinitely.`,
+                        `We use a progressive enforcement tracking layout to keep our channels secure. Breaking rules will update your moderation record as follows:\n\n` +
+                        `* ${emoji.mark} **Formal Warning:** A recorded notification from a staff member to fix your behavior immediately.\n` +
+                        `* ${emoji.timeout} **Account Timeout:** Your ability to type in text channels or speak in voice areas will be locked temporarily.\n` +
+                        `* ${emoji.kick} **Server Kick:** You will be removed from the server directory, but you can rejoin if you hold a valid invite link.\n` +
+                        `* ${emoji.ban} **Permanent Ban:** Your account identity is banned from the server indefinitely with no standard return path.`,
                     inline: false
                 },
                 {
                     name: '───────────────',
-                    value: `${emoji.bell} **Notice:** Moderation points can be given out automatically by our filtering logs or handled manually by server administrators. Please browse responsibly.`,
+                    value: `${emoji.bell} **Notice:** Serious rules offenses can bypass the standard progression entirely, resulting in immediate kicks or bans depending on administrator review.`,
                     inline: false
                 }
             )
             .setTimestamp();
     };
-
-    await interaction.deferReply();
 
     // Component configuration panel layout
     const getButtons = (isDisabled = false) => new ActionRowBuilder().addComponents(
@@ -81,13 +83,19 @@ export async function execute(interaction) {
             .setStyle(ButtonStyle.Link)
     );
 
-    // Initial print phase
-    const response = await interaction.editReply({
+    // Deploy directly as a standalone channel message rather than an interaction reply anchor
+    const response = await interaction.channel.send({
         embeds: [generateEmbed()],
         components: [getButtons(false)]
     });
 
-    // Active interaction framework loop
+    // Provide a hidden ephemeral confirmation response so the slash command closes successfully
+    await interaction.reply({
+        content: 'The community guidelines panel has been deployed below.',
+        ephemeral: true
+    });
+
+    // Active interaction framework loop tied directly to the standalone channel message response
     const collector = response.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 45000
@@ -104,7 +112,7 @@ export async function execute(interaction) {
         if (btnInteraction.customId === 'refresh_rules') {
             const newStartTime = Date.now();
 
-            // Transition clean loading view state
+            // Transition clean loading view state on the current button interaction
             await btnInteraction.update({
                 embeds: [
                     new EmbedBuilder()
@@ -121,7 +129,8 @@ export async function execute(interaction) {
                 await new Promise(resolve => setTimeout(resolve, 400 - dynamicDelay));
             }
 
-            await interaction.editReply({
+            // Edit the standalone message directly using the interaction's editReply vector
+            await btnInteraction.editReply({
                 embeds: [generateEmbed()],
                 components: [getButtons(false)]
             });
@@ -131,7 +140,7 @@ export async function execute(interaction) {
     // Clean tracking window termination
     collector.on('end', async () => {
         try {
-            await interaction.editReply({ components: [getButtons(true)] });
+            await response.edit({ components: [getButtons(true)] });
         } catch {
             // Safe exit route context loss
         }
