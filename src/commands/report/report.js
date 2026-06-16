@@ -225,123 +225,154 @@ export async function execute(interaction) {
                         ]
                     });
 
-                    // ────────────────────────────────────────────────────────────────────────
-                    // 4. INTERACTIVE STAFF ACTIONS MATRIX COLLECTOR
-                    // ────────────────────────────────────────────────────────────────────────
-                    const staffLogCollector = staffLogMessage.createMessageComponentCollector({
-                        componentType: ComponentType.Button
-                    });
+// ────────────────────────────────────────────────────────────────────────
+// 4. INTERACTIVE STAFF ACTIONS MATRIX COLLECTOR (LIVE ENFORCEMENT UPGRADE)
+// ────────────────────────────────────────────────────────────────────────
+const staffLogCollector = staffLogMessage.createMessageComponentCollector({
+    componentType: ComponentType.Button
+});
 
-                    staffLogCollector.on('collect', async (staffInteraction) => {
-                        const isStaff = staffInteraction.member.permissions.has(PermissionFlagsBits.ModerateMembers);
-                        if (!isStaff) {
-                            return staffInteraction.reply({
-                                content: 'Access Restriction. This operational interface matrix is strictly locked to server staff members.',
-                                ephemeral: true
-                            });
-                        }
+// Helper to extract clean snowflake IDs from text inputs or mentions
+const targetId = inputTarget.match(/\d+/)?.[0];
 
-                        const actionId = staffInteraction.customId;
-
-                        // INTERACTION A: DECLINE REPORT INFRASTRUCTURE
-                        if (actionId === 'staff_decline') {
-                            const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
-                                .setColor('#777777') // Muted Iron Grey
-                                .setTitle(`${emoji.timeout} Incident Review Dismissed`)
-                                .addFields({ 
-                                    name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
-                                    value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Case Voided / Dismissed (No Action taken)`, 
-                                    inline: false 
-                                });
-
-                            await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
-                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
-                            staffLogCollector.stop();
-                        }
-
-                        // INTERACTION B: TIMEOUT MODAL INTERCEPTION ARRAY
-                        if (actionId === 'staff_timeout') {
-                            const timeoutModal = new ModalBuilder()
-                                .setCustomId('staff_timeout_modal')
-                                .setTitle('Process User Timeout Action');
-
-                            const timeInput = new TextInputBuilder()
-                                .setCustomId('timeout_duration')
-                                .setLabel('Duration Matrix')
-                                .setStyle(TextInputStyle.Short)
-                                .setPlaceholder('Examples: 10m, 2h, 1d, 7d...')
-                                .setRequired(true);
-
-                            timeoutModal.addComponents(new ActionRowBuilder().addComponents(timeInput));
-                            await staffInteraction.showModal(timeoutModal);
-
-                            const timeoutSubmit = await staffInteraction.awaitModalSubmit({
-                                filter: i => i.customId === 'staff_timeout_modal',
-                                time: 60000
-                            }).catch(() => null);
-
-                            if (timeoutSubmit) {
-                                const durationInput = timeoutSubmit.fields.getTextInputValue('timeout_duration');
-                                
-                                const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
-                                    .setColor('#FFA500') // Alert Orange
-                                    .setTitle(`${emoji.timeout} Incident Actioned: Isolation Timeout Locked`)
-                                    .addFields({ 
-                                        name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
-                                        value: `* **Actioned By:** ${timeoutSubmit.user}\n* **Execution Result:** Target Profile Placed in Isolation\n* **Assigned Duration:** \`${durationInput}\``, 
-                                        inline: false 
-                                    });
-
-                                await timeoutSubmit.update({ embeds: [updatedEmbed], components: [] });
-                                await archiveClosedReport(timeoutSubmit.guild, updatedEmbed);
-                                staffLogCollector.stop();
-                            }
-                        }
-
-                        // INTERACTION C: SERVER KICK ENFORCEMENT PROTOCOL
-                        if (actionId === 'staff_kick') {
-                            const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
-                                .setColor('#FF3333') // Alert Crimson
-                                .setTitle(`${emoji.kick} Incident Actioned: Member Ejected`)
-                                .addFields({ 
-                                    name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
-                                    value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Account Server Expulsion Ejection`, 
-                                    inline: false 
-                                });
-
-                            await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
-                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
-                            staffLogCollector.stop();
-                        }
-
-                        // INTERACTION D: PERMANENT BAN ENFORCEMENT PROTOCOL
-                        if (actionId === 'staff_ban') {
-                            const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
-                                .setColor('#8B0000') // Deep Obsidian Crimson
-                                .setTitle(`${emoji.warning} Incident Actioned: Permanent Blacklist`)
-                                .addFields({ 
-                                    name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
-                                    value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Account Globally Severed & Banned from Registry`, 
-                                    inline: false 
-                                });
-
-                            await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
-                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
-                            staffLogCollector.stop();
-                        }
-                    });
-
-                } catch (error) {
-                    return modalSubmit.editReply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor('#FF3333')
-                                .setTitle(`${emoji.warning} Command Execution Failure`)
-                                .setDescription(`>>> The system application layer core encountered a processing error while attempting to pack form inputs:\n\`\`\`js\n${error.message}\n\`\`\``)
-                        ]
-                    });
-                }
-            }
+staffLogCollector.on('collect', async (staffInteraction) => {
+    const isStaff = staffInteraction.member.permissions.has(PermissionFlagsBits.ModerateMembers);
+    if (!isStaff) {
+        return staffInteraction.reply({
+            content: 'Access Restriction. This operational interface matrix is strictly locked to server staff members.',
+            ephemeral: true
         });
     }
-}
+
+    const actionId = staffInteraction.customId;
+    const auditReason = `Azure Report Resolved by ${staffInteraction.user.tag} | Case Statement: ${inputReason}`;
+
+    // INTERACTION A: DECLINE REPORT
+    if (actionId === 'staff_decline') {
+        const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
+            .setColor('#777777')
+            .setTitle(`${emoji.timeout} Incident Review Dismissed`)
+            .addFields({ 
+                name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
+                value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Case Voided / Dismissed\n* **API Status:** No Action Taken`, 
+                inline: false 
+            });
+
+        await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+        await archiveClosedReport(staffInteraction.guild, updatedEmbed);
+        staffLogCollector.stop();
+    }
+
+    // INTERACTION B: TIMEOUT ENFORCEMENT
+    if (actionId === 'staff_timeout') {
+        const timeoutModal = new ModalBuilder()
+            .setCustomId('staff_timeout_modal')
+            .setTitle('Process User Timeout Action');
+
+        const timeInput = new TextInputBuilder()
+            .setCustomId('timeout_duration')
+            .setLabel('Duration Matrix (e.g., 10m, 2h, 1d, 7d)')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+        timeoutModal.addComponents(new ActionRowBuilder().addComponents(timeInput));
+        await staffInteraction.showModal(timeoutModal);
+
+        const timeoutSubmit = await staffInteraction.awaitModalSubmit({
+            filter: i => i.customId === 'staff_timeout_modal',
+            time: 60000
+        }).catch(() => null);
+
+        if (timeoutSubmit) {
+            const durationInput = timeoutSubmit.fields.getTextInputValue('timeout_duration');
+            
+            // Basic MS duration converter
+            let durationMs = 10 * 60 * 1000; // Default 10m fallback
+            const timeValue = parseInt(durationInput);
+            if (!isNaN(timeValue)) {
+                if (durationInput.includes('m')) durationMs = timeValue * 60 * 1000;
+                else if (durationInput.includes('h')) durationMs = timeValue * 60 * 60 * 1000;
+                else if (durationInput.includes('d')) durationMs = timeValue * 24 * 60 * 60 * 1000;
+            }
+
+            let apiStatus = 'Successfully Enforced';
+            if (!targetId) {
+                apiStatus = '⚠️ Failed: Could not resolve valid target Snowflake User ID from input.';
+            } else {
+                const targetMember = await staffInteraction.guild.members.fetch(targetId).catch(() => null);
+                if (targetMember) {
+                    await targetMember.timeout(durationMs, auditReason).catch(err => { apiStatus = `⚠️ API Error: ${err.message}`; });
+                } else {
+                    apiStatus = '⚠️ Failed: Suspect is not currently present in this server guild.';
+                }
+            }
+
+            const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
+                .setColor('#FFA500')
+                .setTitle(`${emoji.timeout} Incident Actioned: Isolation Timeout Locked`)
+                .addFields({ 
+                    name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
+                    value: `* **Actioned By:** ${timeoutSubmit.user}\n* **Execution Result:** Target Profile Placed in Isolation\n* **Assigned Duration:** \`${durationInput}\`\n* **Network Status:** \`${apiStatus}\``, 
+                    inline: false 
+                });
+
+            await timeoutSubmit.update({ embeds: [updatedEmbed], components: [] });
+            await archiveClosedReport(timeoutSubmit.guild, updatedEmbed);
+            staffLogCollector.stop();
+        }
+    }
+
+    // INTERACTION C: KICK ENFORCEMENT
+    if (actionId === 'staff_kick') {
+        let apiStatus = 'Successfully Enforced';
+        if (!targetId) {
+            apiStatus = '⚠️ Failed: Could not parse a valid numerical User ID.';
+        } else {
+            const targetMember = await staffInteraction.guild.members.fetch(targetId).catch(() => null);
+            if (targetMember) {
+                await targetMember.kick(auditReason).catch(err => { apiStatus = `⚠️ API Error: ${err.message}`; });
+            } else {
+                apiStatus = '⚠️ Failed: Suspect is not in the server to be kicked.';
+            }
+        }
+
+        const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
+            .setColor('#FF3333')
+            .setTitle(`${emoji.kick} Incident Actioned: Member Ejected`)
+            .addFields({ 
+                name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
+                value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Account Server Expulsion Ejection\n* **Network Status:** \`${apiStatus}\``, 
+                inline: false 
+            });
+
+        await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+        await archiveClosedReport(staffInteraction.guild, updatedEmbed);
+        staffLogCollector.stop();
+    }
+
+    // INTERACTION D: PERMANENT BAN ENFORCEMENT
+    if (actionId === 'staff_ban') {
+        let apiStatus = 'Successfully Enforced';
+        if (!targetId) {
+            apiStatus = '⚠️ Failed: Could not parse a valid numerical User ID.';
+        } else {
+            // Discord allows banning IDs even if they aren't currently inside the guild
+            await staffInteraction.guild.members.ban(targetId, { reason: auditReason }).catch(err => { 
+                apiStatus = `⚠️ API Error: ${err.message}`; 
+            });
+        }
+
+        const updatedEmbed = EmbedBuilder.from(staffLogMessage.embeds[0])
+            .setColor('#8B0000')
+            .setTitle(`${emoji.warning} Incident Actioned: Permanent Blacklist`)
+            .addFields({ 
+                name: `${emoji.staff} __RESOLUTION ENFORCEMENT__`, 
+                value: `* **Actioned By:** ${staffInteraction.user}\n* **Execution Result:** Account Globally Severed & Banned\n* **Network Status:** \`${apiStatus}\``, 
+                inline: false 
+            });
+
+        await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+        await archiveClosedReport(staffInteraction.guild, updatedEmbed);
+        staffLogCollector.stop();
+    }
+});
