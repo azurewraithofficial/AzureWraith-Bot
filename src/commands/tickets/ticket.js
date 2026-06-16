@@ -204,7 +204,7 @@ export async function execute(interaction) {
                             await ticketChannel.send({ content: `${emoji.mark} This ticket is now being handled by ${ticketBtnInteraction.user}.` });
                         }
 
-                        // 2. UNCLAIM PROTOCOL (With Validation Security Guard)
+                        // 2. UNCLAIM PROTOCOL
                         if (actionId === 'unclaim_ticket') {
                             const currentEmbed = controlMessage.embeds[0];
                             const staffField = currentEmbed.fields.find(f => f.name.includes('ASSIGNED STAFF'));
@@ -237,7 +237,7 @@ export async function execute(interaction) {
                             await initiateTicketClosure(ticketChannel, ticketBtnInteraction.user, 'No closure rationale specified.', guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
                         }
 
-                        // 4. CLOSE WITH REASON (Staff Modal Input Box)
+                        // 4. CLOSE WITH REASON
                         if (actionId === 'close_reason_ticket') {
                             const modal = new ModalBuilder()
                                 .setCustomId('ticket_close_modal')
@@ -259,7 +259,7 @@ export async function execute(interaction) {
                             }).catch(() => null);
 
                             if (modalSubmit) {
-                                await modalSubmit.deferUpdate();
+                                  await modalSubmit.deferUpdate();
                                 const formalReason = modalSubmit.fields.getTextInputValue('ticket_close_reason');
                                 await initiateTicketClosure(ticketChannel, ticketBtnInteraction.user, formalReason, guild, user, emoji, TRANSCRIPT_CHANNEL_ID);
                             }
@@ -284,7 +284,8 @@ export async function execute(interaction) {
     // 2. TICKET MANAGEMENT DASHBOARD SUBCOMMAND
     // ────────────────────────────────────────────────────────────────────────
     if (subcommand === 'dashboard') {
-        await interaction.deferReply({ ephemeral: true });
+        // CHANGED: ephemeral: false so the panel is completely visible to everyone in the channel
+        await interaction.deferReply({ ephemeral: false });
 
         const fetchDashboardData = async (filterType) => {
             const guild = interaction.guild;
@@ -381,6 +382,19 @@ export async function execute(interaction) {
             components: [getDashboardButtons(activeFilter)]
         });
 
+        // ADDED: Auto-refresh background interval loops seamlessly every 5 minutes (300000 ms)
+        const refreshInterval = setInterval(async () => {
+            try {
+                const autoUpdatedDashboard = await fetchDashboardData(activeFilter);
+                await interaction.editReply({
+                    embeds: [autoUpdatedDashboard],
+                    components: [getDashboardButtons(activeFilter)]
+                });
+            } catch {
+                // Safeguard against missing channel context structures gracefully
+            }
+        }, 300000);
+
         const dashCollector = dashboardMessage.createMessageComponentCollector({
             componentType: ComponentType.Button,
             time: 300000 
@@ -403,6 +417,8 @@ export async function execute(interaction) {
         });
 
         dashCollector.on('end', async () => {
+            // ADDED: Safe clean-up layout to clear the background loop instance cleanly
+            clearInterval(refreshInterval);
             try {
                 const disabledRow = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('d1').setLabel('Session Expired').setStyle(ButtonStyle.Secondary).setDisabled(true)
@@ -423,7 +439,7 @@ async function initiateTicketClosure(channel, executor, reason, guild, owner, em
     const futureDeletionTimestamp = Math.floor((Date.now() + COUNTDOWN_SECONDS * 1000) / 1000);
 
     const countdownEmbed = new EmbedBuilder()
-        .setColor('#FF3333') // Alert Crimson
+        .setColor('#FF3333')
         .setTitle(`${emoji.warning} Ticket Closure Sequence Locked`)
         .setDescription(
             `>>> This support channel has been queued for execution by **${executor.username}**.\n\n` +
@@ -436,7 +452,7 @@ async function initiateTicketClosure(channel, executor, reason, guild, owner, em
         new ButtonBuilder()
             .setCustomId('abort_ticket_closure')
             .setLabel('Cancel Deletion')
-            .setEmoji('1509557251181117500') // Warning Emoji
+            .setEmoji('1509557251181117500')
             .setStyle(ButtonStyle.Secondary)
     );
 
@@ -467,7 +483,7 @@ async function initiateTicketClosure(channel, executor, reason, guild, owner, em
             closureCollector.stop('aborted');
 
             const abortEmbed = new EmbedBuilder()
-                .setColor('#007FFF') // True Azure Blue
+                .setColor('#007FFF')
                 .setTitle(`${emoji.mark} Termination Sequence Cancelled`)
                 .setDescription(`>>> The ticket destruction array was intercepted and aborted successfully by ${btnInteract.user}. This private line remains active.`)
                 .setTimestamp();
@@ -480,10 +496,8 @@ async function initiateTicketClosure(channel, executor, reason, guild, owner, em
     });
 
     closureCollector.on('end', async (collected, endReason) => {
-        // If the deletion sequence was intercepted, do not wipe the channel space
         if (closureAborted || endReason === 'aborted') return;
 
-        // Render button processing state as execution sequence finalized
         const processingRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('processing')
@@ -493,8 +507,6 @@ async function initiateTicketClosure(channel, executor, reason, guild, owner, em
         );
 
         await countdownMessage.edit({ components: [processingRow] }).catch(() => null);
-
-        // Run final log export data compiling cascade immediately
         await processTicketArchival(channel, executor, reason, guild, owner, emoji, logChannelId);
     });
 }
@@ -536,7 +548,6 @@ async function processTicketArchival(channel, executor, reason, guild, owner, em
             await logDestination.send({ embeds: [archiveEmbed], files: [fileAttachment] });
         }
 
-        // Instant channel elimination cascade
         await channel.delete().catch(() => null);
 
     } catch (err) {
