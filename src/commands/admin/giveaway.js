@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 
 // ────────────────────────────────────────────────────────────────────────
-// PURE JAVASCRIPT TIME CONVERSION MATRIX (Replaces 'ms' package)
+// CORE UTILITY: TEMPORAL PARSING ENGINE
 // ────────────────────────────────────────────────────────────────────────
 function parseDuration(str) {
     if (!str) return null;
@@ -33,40 +33,37 @@ function parseDuration(str) {
 
 export const data = new SlashCommandBuilder()
     .setName('giveaway')
-    .setDescription('Initialize a high-stakes server giveaway with role weightage.')
+    .setDescription('Initialize a high-stakes automated network yield distribution.')
     .addSubcommand(subcommand =>
         subcommand
             .setName('create')
-            .setDescription('Configuration for a new giveaway instance.')
-            .addStringOption(opt => opt.setName('duration').setDescription('Duration (e.g., 10s, 30m, 1h, 1d)').setRequired(true))
-            .addIntegerOption(opt => opt.setName('winners').setDescription('Number of winners to be selected').setMinValue(1).setMaxValue(20).setRequired(true))
-            .addRoleOption(opt => opt.setName('requirement').setDescription('Required role to enter the giveaway').setRequired(false))
-            // Extra Entry Configuration Grid (Max 5 roles, max 30 entries capped)
-            .addRoleOption(opt => opt.setName('extra_role_1').setDescription('Bonus Entry Role #1').setRequired(false))
-            .addIntegerOption(opt => opt.setName('extra_amt_1').setDescription('Bonus weight (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
-            
-            .addRoleOption(opt => opt.setName('extra_role_2').setDescription('Bonus Entry Role #2').setRequired(false))
-            .addIntegerOption(opt => opt.setName('extra_amt_2').setDescription('Bonus weight (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
-            
-            .addRoleOption(opt => opt.setName('extra_role_3').setDescription('Bonus Entry Role #3').setRequired(false))
-            .addIntegerOption(opt => opt.setName('extra_amt_3').setDescription('Bonus weight (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
-            
-            .addRoleOption(opt => opt.setName('extra_role_4').setDescription('Bonus Entry Role #4').setRequired(false))
-            .addIntegerOption(opt => opt.setName('extra_amt_4').setDescription('Bonus weight (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
-            
-            .addRoleOption(opt => opt.setName('extra_role_5').setDescription('Bonus Entry Role #5').setRequired(false))
-            .addIntegerOption(opt => opt.setName('extra_amt_5').setDescription('Bonus weight (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
+            .setDescription('Deploy a new algorithmic giveaway matrix.')
+            .addStringOption(opt => opt.setName('duration').setDescription('Temporal window (e.g., 10s, 30m, 1h, 1d)').setRequired(true))
+            .addIntegerOption(opt => opt.setName('winners').setDescription('Total beneficiary capacity').setMinValue(1).setMaxValue(20).setRequired(true))
+            .addRoleOption(opt => opt.setName('requirement').setDescription('Security protocol: Mandatory role for entry').setRequired(false))
+            // Advanced Multiplier Grid Configuration
+            .addRoleOption(opt => opt.setName('extra_role_1').setDescription('Algorithmic Bonus Node #1').setRequired(false))
+            .addIntegerOption(opt => opt.setName('extra_amt_1').setDescription('Weight parameter (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
+            .addRoleOption(opt => opt.setName('extra_role_2').setDescription('Algorithmic Bonus Node #2').setRequired(false))
+            .addIntegerOption(opt => opt.setName('extra_amt_2').setDescription('Weight parameter (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
+            .addRoleOption(opt => opt.setName('extra_role_3').setDescription('Algorithmic Bonus Node #3').setRequired(false))
+            .addIntegerOption(opt => opt.setName('extra_amt_3').setDescription('Weight parameter (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
+            .addRoleOption(opt => opt.setName('extra_role_4').setDescription('Algorithmic Bonus Node #4').setRequired(false))
+            .addIntegerOption(opt => opt.setName('extra_amt_4').setDescription('Weight parameter (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
+            .addRoleOption(opt => opt.setName('extra_role_5').setDescription('Algorithmic Bonus Node #5').setRequired(false))
+            .addIntegerOption(opt => opt.setName('extra_amt_5').setDescription('Weight parameter (Max 30)').setMinValue(1).setMaxValue(30).setRequired(false))
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageEvents);
 
 export async function execute(interaction) {
+    // Custom High-Fidelity Emoji Vector Asset Matrix
     const emoji = {
         warning: '<:Warning:1509557251181117500>',
         mark: '<:Mark:1509557248534253568>',
         staff: '<:Staff:1509557210861142186>',
         bell: '<:Bell:1509557209363775638>',
         member: '<:Member:1509557217961967716>',
-        gift: '🎁'
+        gift: '🎁' // Replace with custom high-res box if available
     };
 
     if (interaction.options.getSubcommand() === 'create') {
@@ -74,17 +71,16 @@ export async function execute(interaction) {
         const winnerCount = interaction.options.getInteger('winners');
         const requiredRole = interaction.options.getRole('requirement');
         
-        // Execute internal string parsing engine
         const durationMs = parseDuration(durationInput);
 
         if (!durationMs) {
             return interaction.reply({ 
-                content: `${emoji.warning} Format Exception: Invalid timeframe format string. Use syntax markers like \`30s\`, \`15m\`, \`2h\`, or \`1d\`.`, 
+                content: `${emoji.warning} **System Exception:** Invalid temporal format string. Utilize exact syntax markers [\`30s\`, \`15m\`, \`2h\`, \`1d\`].`, 
                 ephemeral: true 
             });
         }
 
-        // Parse Bonus Entry Allocation Arrays
+        // Index Algorithmic Bonus Entries
         const extraEntries = [];
         for (let i = 1; i <= 5; i++) {
             const role = interaction.options.getRole(`extra_role_${i}`);
@@ -93,24 +89,24 @@ export async function execute(interaction) {
         }
 
         // ────────────────────────────────────────────────────────────────────────
-        // 1. MODAL CAPTURE DIALOGUE
+        // PHASE 1: CONFIGURATION MODAL (DATA INJECTION)
         // ────────────────────────────────────────────────────────────────────────
         const modal = new ModalBuilder()
             .setCustomId('giveaway_modal')
-            .setTitle('Giveaway Content Configuration');
+            .setTitle('Yield Distribution Data Link');
 
         const titleInput = new TextInputBuilder()
             .setCustomId('giveaway_title')
-            .setLabel('Giveaway Title / Prize Name')
+            .setLabel('Target Asset Identity / Prize Payload')
             .setStyle(TextInputStyle.Short)
-            .setPlaceholder('e.g., Premium Discord Nitro (1 Year)')
+            .setPlaceholder('e.g., Premium Network Access // 1-Year Nitro')
             .setRequired(true);
 
         const descInput = new TextInputBuilder()
             .setCustomId('giveaway_desc')
-            .setLabel('Giveaway Description / Context')
+            .setLabel('Contextual Operations Description')
             .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Provide the specifications, sponsor mentions, and description detail here...')
+            .setPlaceholder('Inject item specifications, sponsor credits, and visual formatting here...')
             .setRequired(true);
 
         modal.addComponents(
@@ -128,37 +124,47 @@ export async function execute(interaction) {
         const endTimestamp = Math.floor((Date.now() + durationMs) / 1000);
 
         // ────────────────────────────────────────────────────────────────────────
-        // 2. EMBED DISPLAY SCHEMATIC
+        // PHASE 2: ACTIVE DEPLOYMENT RENDERING (LIVE MATRIX)
         // ────────────────────────────────────────────────────────────────────────
         const giveawayEmbed = new EmbedBuilder()
-            .setColor('#007FFF') // True Azure Blue
-            .setTitle(`${emoji.gift} ${title}`)
-            .setDescription(`>>> ${description}`)
+            .setColor('#00E5FF') // Cyber Neon Cyan
+            .setTitle(`${emoji.gift} SYSTEM CORE // YIELD DISTRIBUTION ACTIVE`)
+            .setDescription(`>>> **TARGET ASSET:** \`${title}\`\n\n${description}`)
             .addFields(
                 { 
-                    name: `${emoji.bell} __GIVEAWAY DETAILS__`, 
-                    value: `* **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n* **Winners:** \`${winnerCount}\`\n* **Hosted By:** ${interaction.user}`, 
+                    name: `${emoji.bell} ── TEMPORAL METRICS`, 
+                    value: `* **Resolution Phase:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n* **Allocated Beneficiaries:** \`${winnerCount}\`\n* **Hosted By:** ${interaction.user}`, 
                     inline: false 
                 }
             );
 
         if (requiredRole) {
-            giveawayEmbed.addFields({ name: `${emoji.warning} __REQUIREMENTS__`, value: `* Must possess the ${requiredRole} role to qualify.`, inline: true });
+            giveawayEmbed.addFields({ 
+                name: `${emoji.warning} ── SECURITY PROTOCOLS`, 
+                value: `* Target requires **${requiredRole}** network clearance for valid participation.`, 
+                inline: true 
+            });
         }
 
         if (extraEntries.length > 0) {
-            const entryText = extraEntries.map(e => `* <@&${e.roleId}>: **+${e.bonus}** Entries`).join('\n');
-            giveawayEmbed.addFields({ name: `${emoji.mark} __BONUS ENTRIES__`, value: entryText, inline: true });
+            const entryText = extraEntries.map(e => `* <@&${e.roleId}> ➾ **+${e.bonus} Network Value**`).join('\n');
+            giveawayEmbed.addFields({ 
+                name: `📈 ── ALGORITHMIC MULTIPLIERS`, 
+                value: entryText, 
+                inline: true 
+            });
         }
 
-        giveawayEmbed.setTimestamp();
+        giveawayEmbed
+            .setFooter({ text: 'Azure Wraith Operations • Data Link Active & Verifying Entries' })
+            .setTimestamp();
 
         const enterButton = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('giveaway_enter')
-                .setLabel('Enter Giveaway')
-                .setEmoji('1509557248534253568') // Verified Mark Emoji
-                .setStyle(ButtonStyle.Primary)
+                .setLabel('Authorize Entry Protocol')
+                .setEmoji('1509557248534253568') // Verified mark
+                .setStyle(ButtonStyle.Success)
         );
 
         const msg = await modalSubmit.reply({
@@ -170,38 +176,51 @@ export async function execute(interaction) {
         const participants = new Set();
 
         // ────────────────────────────────────────────────────────────────────────
-        // 3. CAPTURE LOGIC PIPELINE
+        // PHASE 3: LIVE EVENT COLLECTOR (NODE INGESTION)
         // ────────────────────────────────────────────────────────────────────────
         const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: durationMs });
 
         collector.on('collect', async (btn) => {
             if (requiredRole && !btn.member.roles.cache.has(requiredRole.id)) {
-                return btn.reply({ content: `${emoji.warning} Access Denied: You do not have the ${requiredRole} role required to enter.`, ephemeral: true });
+                return btn.reply({ 
+                    content: `${emoji.warning} **Access Denied:** Insufficient clearance. You lack the ${requiredRole} network tag.`, 
+                    ephemeral: true 
+                });
             }
 
             if (participants.has(btn.user.id)) {
-                return btn.reply({ content: `${emoji.bell} You have already registered your entry in this giveaway database.`, ephemeral: true });
+                return btn.reply({ 
+                    content: `${emoji.bell} **Redundant Request:** Your node is already registered in the distribution matrix.`, 
+                    ephemeral: true 
+                });
             }
 
             participants.add(btn.user.id);
-            await btn.reply({ content: `${emoji.mark} Your entry has been successfully logged. Good luck!`, ephemeral: true });
+            await btn.reply({ 
+                content: `${emoji.mark} **Connection Established:** Your entry profile has been successfully ingested into the draw array.`, 
+                ephemeral: true 
+            });
         });
 
+        // ────────────────────────────────────────────────────────────────────────
+        // PHASE 4: RESOLUTION SEQUENCE (MATHEMATICAL DISPOSITION)
+        // ────────────────────────────────────────────────────────────────────────
         collector.on('end', async () => {
             const pool = [];
             
-            // Multiplier Probability Math Processing Loop
+            // Weight Distribution & Probability Allocation Loop
             for (const userId of participants) {
                 const member = await interaction.guild.members.fetch(userId).catch(() => null);
                 if (!member) continue;
 
-                let entries = 1; // Base Entry Matrix Allocation
+                let entries = 1; // Base algorithmic weight
                 extraEntries.forEach(config => {
                     if (member.roles.cache.has(config.roleId)) {
                         entries += config.bonus;
                     }
                 });
 
+                // Inject redundant tokens for weighted probability
                 for (let i = 0; i < entries; i++) {
                     pool.push(userId);
                 }
@@ -211,31 +230,44 @@ export async function execute(interaction) {
             if (pool.length > 0) {
                 for (let i = 0; i < winnerCount; i++) {
                     if (pool.length === 0) break;
+                    
+                    // Secure RNG Selection
                     const winnerId = pool[Math.floor(Math.random() * pool.length)];
                     winners.push(`<@${winnerId}>`);
                     
-                    // Purge selected winner tokens from matrix to bypass double-selection anomalies
+                    // Recursive array purge to nullify duplicate beneficiary overlaps
                     while(pool.indexOf(winnerId) !== -1) { 
                         pool.splice(pool.indexOf(winnerId), 1); 
                     }
                 }
             }
 
-            // ────────────────────────────────────────────────────────────────────────
-            // 4. CONCLUSION FIELD RENDERING
-            // ────────────────────────────────────────────────────────────────────────
+            // Generate Archival Result Matrix
             const resultEmbed = EmbedBuilder.from(giveawayEmbed)
-                .setColor(winners.length > 0 ? '#007FFF' : '#777777')
-                .setTitle(`${emoji.gift} Giveaway Concluded`)
+                .setColor(winners.length > 0 ? '#00FF7F' : '#333333') // Success Green or Dead Grey
+                .setTitle(`📦 SYSTEM CORE // YIELD DISTRIBUTION CONCLUDED`)
+                .setDescription(`>>> **ASSET ALLOCATED:** \`${title}\`\n\nThe temporal window has collapsed and algorithms have finalized the pool.`)
                 .setFields(
-                    { name: `${emoji.staff} __FINAL RESULTS__`, value: winners.length > 0 ? `* **Winners:** ${winners.join(', ')}` : '* **Winners:** No valid participants.', inline: false },
-                    { name: '───────────────', value: `${emoji.member} A total of **${participants.size}** users attempted entry.`, inline: false }
-                );
+                    { 
+                        name: `${emoji.staff} ── DISPOSITION RESULTS`, 
+                        value: winners.length > 0 ? `* **Authorized Beneficiaries:**\n${winners.join(', ')}` : '* **Status:** Critical Null — No valid participants logged.', 
+                        inline: false 
+                    },
+                    { 
+                        name: `📊 ── NETWORK TELEMETRY`, 
+                        value: `* A total of **${participants.size}** distinct network IDs attempted access.`, 
+                        inline: false 
+                    }
+                )
+                .setFooter({ text: 'Azure Wraith Operations • Event Matrix Archived' });
 
             await msg.edit({ embeds: [resultEmbed], components: [] });
 
+            // Global Broadcast Payload
             if (winners.length > 0) {
-                await msg.reply({ content: `🎊 Congratulations to the winners: ${winners.join(', ')}!` });
+                await msg.reply({ 
+                    content: `${emoji.mark} **YIELD DISPERSED:** Clearances verified for ${winners.join(', ')}. Please open a network ticket to claim your asset.` 
+                });
             }
         });
     }
