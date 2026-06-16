@@ -34,7 +34,22 @@ export async function execute(interaction) {
     };
 
     const REVIEW_CHANNEL_ID = '1508526293447348235';
+    const CLOSED_REPORTS_CHANNEL_ID = '1508526855047872693'; // Targeted Archival Hub
     const subcommand = interaction.options.getSubcommand();
+
+    // ────────────────────────────────────────────────────────────────────────
+    // LOCAL UTILITY: ARCHIVE CLOSED LOG ROUTER
+    // ────────────────────────────────────────────────────────────────────────
+    async function archiveClosedReport(guild, embed) {
+        try {
+            const archiveChannel = await guild.channels.fetch(CLOSED_REPORTS_CHANNEL_ID).catch(() => null);
+            if (archiveChannel) {
+                await archiveChannel.send({ embeds: [embed] });
+            }
+        } catch (err) {
+            console.error(`[Archive Error] Failed to route closed report entry to database:`, err);
+        }
+    }
 
     // ────────────────────────────────────────────────────────────────────────
     // 1. REPORT PORTAL PANEL DEPLOYMENT
@@ -240,6 +255,7 @@ export async function execute(interaction) {
                                 });
 
                             await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
                             staffLogCollector.stop();
                         }
 
@@ -277,6 +293,7 @@ export async function execute(interaction) {
                                     });
 
                                 await timeoutSubmit.update({ embeds: [updatedEmbed], components: [] });
+                                await archiveClosedReport(timeoutSubmit.guild, updatedEmbed);
                                 staffLogCollector.stop();
                             }
                         }
@@ -293,6 +310,7 @@ export async function execute(interaction) {
                                 });
 
                             await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
                             staffLogCollector.stop();
                         }
 
@@ -308,6 +326,7 @@ export async function execute(interaction) {
                                 });
 
                             await staffInteraction.update({ embeds: [updatedEmbed], components: [] });
+                            await archiveClosedReport(staffInteraction.guild, updatedEmbed);
                             staffLogCollector.stop();
                         }
                     });
