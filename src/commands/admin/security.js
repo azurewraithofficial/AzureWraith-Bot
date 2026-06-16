@@ -35,6 +35,7 @@ export const data = new SlashCommandBuilder()
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator);
 
 export async function execute(interaction) {
+    // Custom High-Fidelity Emoji Vector Asset Matrix
     const emoji = {
         warning: '<:Warning:1509557251181117500>',
         mark: '<:Mark:1509557248534253568>',
@@ -47,60 +48,78 @@ export async function execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
 
     // ────────────────────────────────────────────────────────────────────────
-    // DASHBOARD VIEW MATRIX
+    // PHASE 1: TELEMETRY DASHBOARD CONSOLE VIEW
     // ────────────────────────────────────────────────────────────────────────
     if (subcommand === 'dashboard') {
+        const raidStatusLine = global.securityConfig.antiRaid 
+            ? '`🟢 SYSTEM_ONLINE` ── Perimeter Firewall Intercept Enabled' 
+            : '`🔴 SYSTEM_OFFLINE` ── Security Firewall Suspended';
+
+        const nukeStatusLine = global.securityConfig.antiNuke 
+            ? '`🟢 SYSTEM_ONLINE` ── Administrative Clearances Monitored' 
+            : '`🔴 SYSTEM_OFFLINE` ── Privilege Overrides Interception Inactive';
+
         const dashboardEmbed = new EmbedBuilder()
-            .setColor('#007FFF') // True Azure Blue
-            .setTitle(`${emoji.staff} Security Matrix Operational Telemetry`)
-            .setDescription('>>> Active tracking configurations for automated perimeter defenses and internal staff audit controls.')
+            .setColor(global.securityConfig.antiRaid && global.securityConfig.antiNuke ? '#007FFF' : '#FFCC00') // Azure or Caution Amber
+            .setTitle(`🛡️ MAINFRAME OPERATIONAL CONTROL // DEFENSE TELEMETRY`)
+            .setDescription('>>> Real-time tracking analytics for server perimeter automated defense arrays, network gatekeeper values, and asynchronous internal auditing structures.')
             .addFields(
                 {
-                    name: `🛡️ __ANTI-RAID INFRASTRUCTURE__`,
+                    name: `📡 ── PERIMETER ANTI-RAID INFRASTRUCTURE`,
                     value: 
-                        `* **Status Profile:** ${global.securityConfig.antiRaid ? '`🟢 ACTIVE`' : '`🔴 DEACTIVATED`'}\n` +
-                        `* **Velocity Threshold:** \`${global.securityConfig.joinThreshold} joins / 10s\`\n` +
-                        `* **Action Protocol:** Automated Server Lockdown`,
+                        `* **System State:** ${raidStatusLine}\n` +
+                        `* **Velocity Cap:** \`${global.securityConfig.joinThreshold} handshakes / 10s\`\n` +
+                        `* **Mitigation Protocol:** \`AUTOMATED INTERCEPT / SERVER LOCKDOWN\``,
                     inline: false
                 },
                 {
-                    name: `☣️ __ANTI-NUKE INFRASTRUCTURE__`,
+                    name: `☣️ ── BACKBONE ANTI-NUKE MONITOR`,
                     value: 
-                        `* **Status Profile:** ${global.securityConfig.antiNuke ? '`🟢 ACTIVE`' : '`🔴 DEACTIVATED`'}\n` +
-                        `* **Malice Threshold:** \`${global.securityConfig.deleteThreshold} channel deletions / 60s\`\n` +
-                        `* **Action Protocol:** Strip Staff Clearance & Re-clone Asset`,
+                        `* **System State:** ${nukeStatusLine}\n` +
+                        `* **Malice Metric:** \`${global.securityConfig.deleteThreshold} channel deletions / 60s\`\n` +
+                        `* **Mitigation Protocol:** \`STRIP ELEVATED CLEARANCES & AUTO-CLONE ASSETS\``,
                     inline: false
                 },
                 {
-                    name: '───────────────',
-                    value: `${emoji.bell} **Notice:** Internal monitoring scripts run asynchronously on the process core. Direct mutations propagate across all cluster nodes instantly.`,
+                    name: ' ',
+                    value: '───\n' + `${emoji.bell} **System Cluster Node:** Synchronization active. Direct runtime mutations propagate across memory space and update background clusters instantaneously.`,
                     inline: false
                 }
             )
+            .setFooter({ text: 'Mainframe Infrastructure Secure • Kernel v4.16' })
             .setTimestamp();
 
         return interaction.editReply({ embeds: [dashboardEmbed] });
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // TOGGLE INFRASTRUCTURE STATES
+    // PHASE 2: MUTATION ROUTINE // TOGGLE INFRASTRUCTURE STATE
     // ────────────────────────────────────────────────────────────────────────
     if (subcommand === 'toggle') {
         const selectedSystem = interaction.options.getString('system');
+        
+        // Execute Atomic Configuration Swap
         global.securityConfig[selectedSystem] = !global.securityConfig[selectedSystem];
 
-        const systemLabel = selectedSystem === 'antiRaid' ? 'Anti-Raid Gateway' : 'Anti-Nuke Interceptor';
+        const systemLabel = selectedSystem === 'antiRaid' ? 'Perimeter Anti-Raid Gateway' : 'Backbone Anti-Nuke Interceptor';
         const systemState = global.securityConfig[selectedSystem];
+        
+        // Dynamic Matrix Color Assignment based on modern secure state
+        const stateColor = systemState ? '#00FF7F' : '#FF3333'; 
 
         const successEmbed = new EmbedBuilder()
-            .setColor('#007FFF')
-            .setTitle(`${emoji.mark} Configuration Array Updated`)
-            .setDescription(`>>> The administrative defense parameter matrix has been modified successfully.`)
+            .setColor(stateColor)
+            .setTitle(`${emoji.mark} HARDWARE ROUTER CONFIGURATION RE-INDEXED`)
+            .setDescription(`>>> The server's administrative hardware firewall parameters have successfully processed a state mutation directive.`)
             .addFields({
-                name: '__MODIFICATION ACCESS LOG__',
-                value: `* **Target Layer:** \`${systemLabel}\`\n* **Updated State:** ${systemState ? '`🟢 ENABLED`' : '`🔴 DISABLED`'}`,
+                name: `📋 ── CORE MODIFICATION LOG`,
+                value: 
+                    `* **Target Infrastructure:** \`${systemLabel}\`\n` +
+                    `* **Updated Vector State:** ${systemState ? '`🟢 ARMED / ACTIVE`' : '`🔴 SUSPENDED / BYPASSED`'}\n` +
+                    `* **Operator Sign-off:** ${interaction.user}`,
                 inline: false
             })
+            .setFooter({ text: 'Mainframe Cluster Matrix Refreshed' })
             .setTimestamp();
 
         return interaction.editReply({ embeds: [successEmbed] });
