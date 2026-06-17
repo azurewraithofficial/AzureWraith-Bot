@@ -17,6 +17,19 @@ export async function execute(member) {
     const now = Date.now();
 
     // ────────────────────────────────────────────────────────────────────────
+    // AUTOMATED AUTOROLE INJECTION ENGINE
+    // ────────────────────────────────────────────────────────────────────────
+    const targetRoleId = '1508528052487983134';
+    
+    try {
+        // Execute dynamic role verification alignment injection
+        await member.roles.add(targetRoleId, 'Automated Authorization Protocol: Default Entry Role Assigned.');
+    } catch (roleError) {
+        // Log faults safely if hierarchy conflicts arise (e.g. Bot role is below target role)
+        console.error(`[AUTOROLE FAILURE] Unable to append role ${targetRoleId} to user ${member.id}:`, roleError.message);
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
     // PHASE A: ANTI-RAID VELOCITY MONITORING CORE
     // ────────────────────────────────────────────────────────────────────────
     const securityConfig = global.securityConfig || { antiRaid: true, joinThreshold: 8 };
